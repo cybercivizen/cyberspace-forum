@@ -16,17 +16,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "../alert-dialog";
 
 export default function ChatBox() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
+
   const [isMsgHovered, setIsMsgHovered] = useState<number | null>(null);
   const [showOptions, setShowOptions] = useState<number | null>(null);
+
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [editedMessage, setEditedMessage] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
   const handleSend = () => {
     console.log("Message sent:", message);
@@ -51,9 +55,16 @@ export default function ChatBox() {
 
   const handleMsgDelete = (index?: number) => {
     console.log("Delete message index:", index);
+    setOpenDeleteDialog(true);
+    setDeletingIndex(index ?? null);
+    setShowOptions(null);
+  };
+
+  const handleDeleteSave = (index?: number) => {
+    console.log("Delete message index:", index);
     const updatedMessages = messages.filter((_, i) => i !== index);
     setMessages(updatedMessages);
-    setShowOptions(null);
+    setOpenDeleteDialog(false);
   };
 
   const handleMsgEdit = (index: number) => {
@@ -95,7 +106,31 @@ export default function ChatBox() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className="flex flex-col w-10/12 pr-4 pl-4 absolute bottom-4 opacity-80">
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              message.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteSave(deletingIndex ?? undefined)}
+              >
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Card className="overflow-auto flex flex-col w-10/12 pr-4 pl-4 opacity-80">
         {messages.map((msg, index) => (
           <div
             key={index}
@@ -114,12 +149,20 @@ export default function ChatBox() {
             )}
             {showOptions === index && (
               <div className="flex">
-                <MsgDeleteDialog
-                  index={index}
-                  handleMsgDelete={handleMsgDelete}
-                />
                 <Tooltip>
-                  <TooltipTrigger asChild content="Edit message">
+                  <TooltipTrigger asChild>
+                    <TrashIcon
+                      className="w-5 h-5 ml-2 self-center cursor-pointer"
+                      onClick={() => handleMsgDelete(index)}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete message</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <PencilIcon
                       className="w-5 h-5 ml-2 self-center cursor-pointer"
                       onClick={() => handleMsgEdit(index)}
@@ -134,7 +177,7 @@ export default function ChatBox() {
           </div>
         ))}
 
-        <div className="flex bottom-0 gap-4 ">
+        <div className="flex gap-4">
           <Input
             placeholder="Type your message..."
             value={message}
@@ -145,48 +188,5 @@ export default function ChatBox() {
         </div>
       </Card>
     </>
-  );
-}
-
-function MsgDeleteDialog({
-  index,
-  handleMsgDelete,
-}: {
-  index?: number;
-  handleMsgDelete: (index?: number) => void;
-}) {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <TrashIcon className="w-5 h-5 self-center cursor-pointer" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Delete message</p>
-          </TooltipContent>
-        </Tooltip>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            message.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              onClick={() => handleMsgDelete(index)}
-            >
-              Delete
-            </Button>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }
