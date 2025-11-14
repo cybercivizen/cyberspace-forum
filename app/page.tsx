@@ -1,12 +1,9 @@
-import { Card } from "@/components/ui/card";
-import ChatBox from "@/components/ui/home/chatBox";
+import ChatBox from "@/components/home/chat-box";
 
 export default function Home() {
   return (
-    <div>
-      <div className="flex justify-center items-end p-10">
-        <ChatBox />
-      </div>
+    <div className="flex justify-center p-10 max-h-[89vh] items-end h-[89vh]">
+      <ChatBox />
     </div>
   );
 }

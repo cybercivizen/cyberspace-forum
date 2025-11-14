@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "../button";
-import { Input } from "../input";
-import { Card } from "../card";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Card } from "../ui/card";
 import { ChevronDownIcon, PencilIcon } from "@heroicons/react/24/solid";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +16,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../alert-dialog";
+} from "../ui/alert-dialog";
 
 export default function ChatBox() {
   const [message, setMessage] = useState("");
@@ -130,54 +130,64 @@ export default function ChatBox() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Card className="overflow-auto flex flex-col w-10/12 pr-4 pl-4 opacity-80">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className="flex"
-            onMouseEnter={() => setIsMsgHovered(index)}
-            onMouseLeave={() => handleMsgHover()}
-          >
-            <Card className="w-fit p-3 bg-accent">{msg}</Card>
-            {isMsgHovered === index && (
-              <ChevronDownIcon
-                className={`w-5 h-5 self-center ml-3 cursor-pointer ${
-                  showOptions === index ? "-rotate-90" : ""
-                }`}
-                onClick={() => handleMsgOptions(index)}
-              />
-            )}
-            {showOptions === index && (
-              <div className="flex">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <TrashIcon
-                      className="w-5 h-5 ml-2 self-center cursor-pointer"
-                      onClick={() => handleMsgDelete(index)}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Delete message</p>
-                  </TooltipContent>
-                </Tooltip>
+      <Card
+        className={`overflow-auto flex gap-0 flex-col w-10/12 p-0 ${
+          messages.length > 0 ? "pt-4" : ""
+        } shadow-2xl`}
+      >
+        <div className="flex flex-col gap-4 pr-4 pl-4">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className="flex"
+              onMouseEnter={() => setIsMsgHovered(index)}
+              onMouseLeave={() => handleMsgHover()}
+            >
+              <Card className="w-fit p-3 bg-accent z-0">{msg}</Card>
+              {isMsgHovered === index && (
+                <ChevronDownIcon
+                  className={`w-5 h-5 self-center ml-3 cursor-pointer ${
+                    showOptions === index ? "-rotate-90" : ""
+                  }`}
+                  onClick={() => handleMsgOptions(index)}
+                />
+              )}
+              {showOptions === index && (
+                <div className="flex">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <TrashIcon
+                        className="w-5 h-5 ml-2 self-center cursor-pointer"
+                        onClick={() => handleMsgDelete(index)}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete message</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <PencilIcon
-                      className="w-5 h-5 ml-2 self-center cursor-pointer"
-                      onClick={() => handleMsgEdit(index)}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Edit message</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-          </div>
-        ))}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <PencilIcon
+                        className="w-5 h-5 ml-2 self-center cursor-pointer"
+                        onClick={() => handleMsgEdit(index)}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit message</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
 
-        <div className="flex gap-4">
+        <div
+          className={`flex gap-4 sticky bottom-0 ${
+            messages.length > 0 ? "mt-4" : ""
+          } bg-black p-4 shadow-lg`}
+        >
           <Input
             placeholder="Type your message..."
             value={message}
