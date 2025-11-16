@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { BubbleBackground } from "@/components/animate-ui/components/backgrounds/bubble";
-import { StarsBackground } from "@/components/animate-ui/components/backgrounds/stars";
-import { Card } from "@/components/ui/card";
+import { ThemeProvider } from "@/src/components/theme-provider";
+import { BubbleBackground } from "@/src/components/animate-ui/components/backgrounds/bubble";
+import { StarsBackground } from "@/src/components/animate-ui/components/backgrounds/stars";
+import { Card } from "@/src/components/ui/card";
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
+} from "@/src/components/ui/navigation-menu";
 import { Link } from "@radix-ui/react-navigation-menu";
 import { Menubar } from "@radix-ui/react-menubar";
 import {
@@ -21,8 +21,8 @@ import {
   MenubarSeparator,
   MenubarShortcut,
   MenubarTrigger,
-} from "@/components/ui/menubar";
-import NavBar from "@/components/navbar";
+} from "@/src/components/ui/menubar";
+import NavBar from "@/src/components/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
