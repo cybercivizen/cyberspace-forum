@@ -58,7 +58,7 @@ export default function RootLayout({
           <div className="flex flex-col h-screen">
             <NavBar />
             <main className="flex-1 relative h-screen">
-              <StarsBackground pointerEvents={false} className="flex">
+              <StarsBackground pointerEvents={false} className="flex z-0">
                 {children}
               </StarsBackground>
             </main>

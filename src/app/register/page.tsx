@@ -82,10 +82,11 @@ export default function RegisterPage() {
 
   function onSubmit(data: FormInput) {
     console.log(data);
+    // Handle registration logic here
   }
 
   return (
-    <Card className="w-2/4 m-auto">
+    <Card className="w-2/4 m-auto z-10">
       <CardHeader>
         <CardTitle className="text-2xl">Register</CardTitle>
         <CardDescription>
