@@ -118,4 +118,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    @apply text-[80%]; /* Arbitrary value: Scales base to 80% of default 16px */
+  }
 }
