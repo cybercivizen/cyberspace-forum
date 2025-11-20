@@ -1,22 +1,7 @@
-import { DataSource } from "typeorm";
-import "reflect-metadata";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
-let dataSource: DataSource | null = null;
+const client = postgres(process.env.DATABASE_URL!);
+const db = drizzle(client);
 
-export async function getDbConnection() {
-  if (!dataSource) {
-    dataSource = new DataSource({
-      type: "postgres",
-      url: process.env.DATABASE_URL,
-      entities: [__dirname + "/../entities/*.ts"], // Or explicit imports: [User, Post]
-      synchronize: false, // Never true in prod—use migrations!
-      logging: process.env.NODE_ENV === "development",
-    });
-  }
-
-  if (!dataSource.isInitialized) {
-    await dataSource.initialize();
-  }
-
-  return dataSource;
-}
+export default db;

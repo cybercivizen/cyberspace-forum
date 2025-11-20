@@ -23,7 +23,6 @@ import {
   PopoverTrigger,
 } from "@/src/components/ui/popover";
 import { Button } from "@/src/components/ui/button";
-import { CalendarIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import React from "react";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import {
@@ -38,6 +37,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { seedUser } from "./actions";
 
 const FormSchema = z
   .object({
@@ -51,7 +51,7 @@ const FormSchema = z
       .string()
       .min(6, "Password must be at least 6 characters"),
     dateOfBirth: z.date("Invalid date of birth"),
-    accountType: z.enum(["npc", "rgb", "dog"]),
+    accountType: z.enum(["npc", "rgb", "dog"], "No account type selected"),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "You must accept the terms and conditions",
     }),
@@ -66,9 +66,10 @@ type FormInput = z.infer<typeof FormSchema>;
 export default function RegisterPage() {
   const [openCalendar, setOpenCalendar] = React.useState(false);
 
-  const accountTypes = ["NPC", "RGB", "Dog"];
-  const { handleSubmit, control } = useForm<FormInput>({
+  const accountTypes = ["Admin", "User"];
+  const { handleSubmit, control, reset } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
+    mode: "onChange",
     defaultValues: {
       username: "",
       email: "",
@@ -83,6 +84,11 @@ export default function RegisterPage() {
   function onSubmit(data: FormInput) {
     console.log(data);
     // Handle registration logic here
+  }
+
+  async function onReset() {
+    reset();
+    await seedUser();
   }
 
   return (
@@ -285,7 +291,9 @@ export default function RegisterPage() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal" className="justify-end gap-4">
-          <Button variant="outline">Reset</Button>
+          <Button variant="outline" onClick={onReset}>
+            Reset
+          </Button>
           <Button type="submit" form="register-form">
             Register
           </Button>
