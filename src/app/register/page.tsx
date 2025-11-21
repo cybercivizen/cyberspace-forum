@@ -37,7 +37,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { seedUser } from "./actions";
+import { saveUser } from "./actions";
 
 const FormSchema = z
   .object({
@@ -51,7 +51,7 @@ const FormSchema = z
       .string()
       .min(6, "Password must be at least 6 characters"),
     dateOfBirth: z.date("Invalid date of birth"),
-    accountType: z.enum(["npc", "rgb", "dog"], "No account type selected"),
+    accountType: z.enum(["admin", "user"], "No account type selected"),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "You must accept the terms and conditions",
     }),
@@ -81,14 +81,14 @@ export default function RegisterPage() {
     },
   });
 
-  function onSubmit(data: FormInput) {
+  async function onSubmit(data: FormInput) {
     console.log(data);
     // Handle registration logic here
+    await saveUser(data);
   }
 
   async function onReset() {
     reset();
-    await seedUser();
   }
 
   return (
