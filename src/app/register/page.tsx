@@ -120,6 +120,10 @@ export default function RegisterPage() {
         <CardTitle className="text-2xl">Register</CardTitle>
         <CardDescription>
           Create a new <span className="font-mono">TERMINAL</span> account.
+          Already have an account?{" "}
+          <a href="/login" className="text-primary font-mono">
+            Login
+          </a>
         </CardDescription>
       </CardHeader>
       <CardContent>
