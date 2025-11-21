@@ -23,6 +23,7 @@ import {
   MenubarTrigger,
 } from "@/src/components/ui/menubar";
 import NavBar from "@/src/components/navbar";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,6 +62,7 @@ export default function RootLayout({
               <StarsBackground pointerEvents={false} className="flex z-0">
                 {children}
               </StarsBackground>
+              <Toaster />
             </main>
             {/* Footer - appears on all pages */}
             <footer className="p-2 border-t bg-background/80">

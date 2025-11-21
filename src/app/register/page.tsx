@@ -37,7 +37,13 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { saveUser } from "./actions";
+import { registerUser } from "./actions";
+import {
+  getErrorMessage,
+  getValidationError,
+  ValidationError,
+} from "@/src/lib/utils";
+import { toast } from "sonner";
 
 const FormSchema = z
   .object({
@@ -51,7 +57,7 @@ const FormSchema = z
       .string()
       .min(6, "Password must be at least 6 characters"),
     dateOfBirth: z.date("Invalid date of birth"),
-    accountType: z.enum(["admin", "user"], "No account type selected"),
+    role: z.enum(["admin", "user"], "No account role selected"),
     termsAccepted: z.boolean().refine((val) => val === true, {
       message: "You must accept the terms and conditions",
     }),
@@ -64,10 +70,13 @@ const FormSchema = z
 type FormInput = z.infer<typeof FormSchema>;
 
 export default function RegisterPage() {
-  const [openCalendar, setOpenCalendar] = React.useState(false);
-
-  const accountTypes = ["Admin", "User"];
-  const { handleSubmit, control, reset } = useForm<FormInput>({
+  const {
+    handleSubmit,
+    control,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
     defaultValues: {
@@ -76,15 +85,36 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
       dateOfBirth: undefined,
-      accountType: undefined,
+      role: undefined,
       termsAccepted: false,
     },
   });
 
+  const [openCalendar, setOpenCalendar] = React.useState(false);
+
+  const roles = ["Admin", "User"];
+
   async function onSubmit(data: FormInput) {
-    console.log(data);
-    // Handle registration logic here
-    await saveUser(data);
+    const result = await registerUser(data);
+
+    if (result.errors) {
+      if (result.errors.email) {
+        setError("email", {
+          type: "manual",
+          message: result.errors.email,
+        });
+      }
+
+      if (result.errors.username) {
+        setError("username", {
+          type: "manual",
+          message: result.errors.username,
+        });
+      }
+    } else {
+      reset();
+      toast.success("Account has been created succesfully!");
+    }
   }
 
   async function onReset() {
@@ -230,7 +260,7 @@ export default function RegisterPage() {
                   )}
                 />
                 <Controller
-                  name="accountType"
+                  name="role"
                   control={control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
@@ -246,7 +276,7 @@ export default function RegisterPage() {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Types</SelectLabel>
-                            {accountTypes.map((type) => (
+                            {roles.map((type) => (
                               <SelectItem key={type} value={type.toLowerCase()}>
                                 {type}
                               </SelectItem>
