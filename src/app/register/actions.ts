@@ -1,10 +1,9 @@
 "use server";
 
+import { authenticateUser } from "@/src/lib/auth";
 import db from "@/src/lib/db";
 import { roles, users } from "@/src/lib/schema";
-import { ValidationError } from "@/src/lib/utils";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 
 export async function registerUser(data: {
   username: string;
@@ -29,19 +28,19 @@ export async function registerUser(data: {
   }
 
   const roleId = roleResult[0].id;
-  const isUsernameTaken = await db
-    .select()
-    .from(users)
-    .where(eq(users.username, data.username))
-    .limit(1)
-    .then((d) => d.length);
 
-  const isEmailTaken = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, data.email))
-    .limit(1)
-    .then((d) => d.length);
+  const isUsernameTaken =
+    (
+      await db
+        .select()
+        .from(users)
+        .where(eq(users.username, data.username))
+        .limit(1)
+    ).length > 0;
+
+  const isEmailTaken =
+    (await db.select().from(users).where(eq(users.email, data.email)).limit(1))
+      .length > 0;
 
   if (isEmailTaken || isUsernameTaken) {
     return {
@@ -61,8 +60,10 @@ export async function registerUser(data: {
     rolesId: roleId,
   });
 
+  authenticateUser();
+
   return {
     success: true,
-    errors: {},
+    errors: null,
   };
 }

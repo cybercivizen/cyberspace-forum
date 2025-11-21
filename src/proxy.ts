@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAuthenticated } from "./lib/auth";
 
 export function proxy(request: NextRequest) {
   // Check if user is online; this is just a placeholder condition
-  return NextResponse.redirect(new URL("/register", request.url));
+  if (!isAuthenticated) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 }
 
 export const config = {

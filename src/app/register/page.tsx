@@ -38,12 +38,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { registerUser } from "./actions";
-import {
-  getErrorMessage,
-  getValidationError,
-  ValidationError,
-} from "@/src/lib/utils";
+
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const FormSchema = z
   .object({
@@ -70,13 +67,8 @@ const FormSchema = z
 type FormInput = z.infer<typeof FormSchema>;
 
 export default function RegisterPage() {
-  const {
-    handleSubmit,
-    control,
-    reset,
-    setError,
-    formState: { errors },
-  } = useForm<FormInput>({
+  const router = useRouter();
+  const { handleSubmit, control, reset, setError } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
     defaultValues: {
@@ -85,7 +77,7 @@ export default function RegisterPage() {
       password: "",
       confirmPassword: "",
       dateOfBirth: undefined,
-      role: undefined,
+      role: "user",
       termsAccepted: false,
     },
   });
@@ -96,8 +88,8 @@ export default function RegisterPage() {
 
   async function onSubmit(data: FormInput) {
     const result = await registerUser(data);
-
-    if (result.errors) {
+    console.log("Registration result:", result);
+    if (!result.success && result.errors) {
       if (result.errors.email) {
         setError("email", {
           type: "manual",
@@ -114,6 +106,7 @@ export default function RegisterPage() {
     } else {
       reset();
       toast.success("Account has been created succesfully!");
+      router.push("/login");
     }
   }
 
