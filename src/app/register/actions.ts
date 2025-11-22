@@ -4,6 +4,8 @@ import { authenticateUser } from "@/src/lib/auth";
 import db from "@/src/lib/db";
 import { roles, users } from "@/src/lib/schema";
 import { eq } from "drizzle-orm";
+import bcrypt from "bcrypt";
+import { createSession } from "@/src/lib/session";
 
 export async function registerUser(data: {
   username: string;
@@ -51,16 +53,17 @@ export async function registerUser(data: {
       },
     };
   }
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
   await db.insert(users).values({
     username: data.username,
     email: data.email,
-    password: data.password,
+    password: hashedPassword,
     dateOfBirth: data.dateOfBirth,
     rolesId: roleId,
   });
 
-  authenticateUser();
+  await createSession(data.email);
 
   return {
     success: true,

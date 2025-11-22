@@ -41,6 +41,7 @@ import { registerUser } from "./actions";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { createSession } from "@/src/lib/session";
 
 const FormSchema = z
   .object({

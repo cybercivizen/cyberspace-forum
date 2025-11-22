@@ -2,6 +2,7 @@
 import { authenticateUser } from "@/src/lib/auth";
 import db from "@/src/lib/db";
 import { users } from "@/src/lib/schema";
+import { createSession } from "@/src/lib/session";
 import { and, eq } from "drizzle-orm";
 
 export async function loginUser(data: { email: string; password: string }) {
@@ -38,7 +39,7 @@ export async function loginUser(data: { email: string; password: string }) {
     };
   }
 
-  authenticateUser();
+  await createSession(data.email);
 
   return {
     success: true,
