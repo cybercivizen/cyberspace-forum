@@ -19,9 +19,9 @@ import { Input } from "@/src/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import z, { email, string } from "zod";
-import { loginUser } from "./actions";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { login } from "@/src/lib/auth";
 
 const FormSchema = z.object({
   email: email("Invalid email address"),
@@ -44,7 +44,7 @@ export default function LoginPage() {
   });
 
   async function onLogin(data: FormInput) {
-    const result = await loginUser(data);
+    const result = await login(data);
     if (!result.success) {
       if (result.errors?.email) {
         setError("email", {

@@ -37,10 +37,10 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { signupUser } from "./actions";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { signup } from "@/src/lib/auth";
 
 const FormSchema = z
   .object({
@@ -87,7 +87,7 @@ export default function SignupPage() {
   const roles = ["Admin", "User"];
 
   async function onSubmit(data: FormInput) {
-    const result = await signupUser(data);
+    const result = await signup(data);
     console.log("Registration result:", result);
     if (!result.success && result.errors) {
       if (result.errors.email) {
