@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card } from "../ui/card";
@@ -19,8 +19,12 @@ import {
 } from "../ui/alert-dialog";
 
 export default function ChatBox() {
+  const maxCharacters = 100;
+
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<string[]>([]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [isMsgHovered, setIsMsgHovered] = useState<number | null>(null);
   const [showOptions, setShowOptions] = useState<number | null>(null);
@@ -83,6 +87,10 @@ export default function ChatBox() {
     setOpenEditDialog(false);
   };
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <>
       <AlertDialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
@@ -135,11 +143,11 @@ export default function ChatBox() {
           messages.length > 0 ? "pt-4" : ""
         } shadow-2xl`}
       >
-        <div className="flex flex-col gap-4 pr-4 pl-4">
+        <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className="flex"
+              className="flex wrap-anywhere"
               onMouseEnter={() => setIsMsgHovered(index)}
               onMouseLeave={() => handleMsgHover()}
             >
@@ -181,6 +189,7 @@ export default function ChatBox() {
               )}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
         <div
@@ -188,13 +197,32 @@ export default function ChatBox() {
             messages.length > 0 ? "mt-4" : ""
           } bg-black p-4 shadow-lg`}
         >
-          <Input
-            placeholder="Type your message..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          />
-          <Button onClick={() => handleSend()}>Send</Button>
+          <div className="relative flex-1">
+            {" "}
+            {/* Wrapper for positioning */}
+            <Input
+              placeholder="Type your message..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              className="pr-10" // Add padding-right to avoid overlap
+            />
+            <div
+              className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-sm  ${
+                message.length >= maxCharacters
+                  ? "text-red-400"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {message.length} / {maxCharacters}
+            </div>
+          </div>
+          <Button
+            onClick={() => handleSend()}
+            disabled={message.length > maxCharacters}
+          >
+            Send
+          </Button>
         </div>
       </Card>
     </>

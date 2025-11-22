@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
 
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
-  console.log("session", session);
+  // console.log("session", session);
 
   if (isProtectedRoute && !session?.email) {
     return NextResponse.redirect(new URL("/login", request.url));

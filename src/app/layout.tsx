@@ -44,10 +44,8 @@ export default async function RootLayout({
         >
           <div className="flex flex-col h-screen">
             <NavBar email={email} />
-            <main className="flex-1 relative h-screen">
-              <StarsBackground pointerEvents={false} className="flex z-0">
-                {children}
-              </StarsBackground>
+            <main className="flex relative h-screen">
+              {children}
               <Toaster />
             </main>
             {/* Footer - appears on all pages */}
