@@ -117,6 +117,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../../public/bg2.png'); /* Dark overlay + image */
+    background-size: cover; /* Scales to cover the entire area */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents tiling */
+    background-attachment: fixed; /* Keeps it fixed during scroll (optional) */
   }
   html {
     @apply text-[80%]; /* Arbitrary value: Scales base to 80% of default 16px */

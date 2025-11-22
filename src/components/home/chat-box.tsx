@@ -141,7 +141,7 @@ export default function ChatBox() {
       <Card
         className={`overflow-auto flex gap-0 flex-col w-10/12 p-0 ${
           messages.length > 0 ? "pt-4" : ""
-        } shadow-2xl`}
+        } shadow-2xl bg-black/50`}
       >
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {messages.map((msg, index) => (
@@ -195,7 +195,7 @@ export default function ChatBox() {
         <div
           className={`flex gap-4 sticky bottom-0 ${
             messages.length > 0 ? "mt-4" : ""
-          } bg-black p-4 shadow-lg`}
+          } bg-black p-4 shadow-lg `}
         >
           <div className="relative flex-1">
             {" "}
