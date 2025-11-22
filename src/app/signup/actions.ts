@@ -1,13 +1,12 @@
 "use server";
 
-import { authenticateUser } from "@/src/lib/auth";
 import db from "@/src/lib/db";
 import { roles, users } from "@/src/lib/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { createSession } from "@/src/lib/session";
 
-export async function registerUser(data: {
+export async function signupUser(data: {
   username: string;
   email: string;
   password: string;
@@ -18,7 +17,6 @@ export async function registerUser(data: {
 }) {
   console.log("Saving user:", data);
 
-  // Fetch the role ID synchronously before insert
   const roleResult = await db
     .select({ id: roles.id })
     .from(roles)
@@ -53,6 +51,7 @@ export async function registerUser(data: {
       },
     };
   }
+
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
   await db.insert(users).values({

@@ -37,11 +37,10 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { registerUser } from "./actions";
+import { signupUser } from "./actions";
 
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createSession } from "@/src/lib/session";
 
 const FormSchema = z
   .object({
@@ -67,7 +66,7 @@ const FormSchema = z
 
 type FormInput = z.infer<typeof FormSchema>;
 
-export default function RegisterPage() {
+export default function SignupPage() {
   const router = useRouter();
   const { handleSubmit, control, reset, setError } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
@@ -88,7 +87,7 @@ export default function RegisterPage() {
   const roles = ["Admin", "User"];
 
   async function onSubmit(data: FormInput) {
-    const result = await registerUser(data);
+    const result = await signupUser(data);
     console.log("Registration result:", result);
     if (!result.success && result.errors) {
       if (result.errors.email) {
@@ -118,7 +117,7 @@ export default function RegisterPage() {
   return (
     <Card className="w-2/4 m-auto z-10">
       <CardHeader>
-        <CardTitle className="text-2xl">Register</CardTitle>
+        <CardTitle className="text-2xl">Signup</CardTitle>
         <CardDescription>
           Create a new <span className="font-mono">TERMINAL</span> account.
           Already have an account?{" "}
@@ -128,7 +127,7 @@ export default function RegisterPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="register-form" onSubmit={handleSubmit(onSubmit)}>
+        <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             <FieldSet>
               <div className="grid grid-cols-2 gap-4">
@@ -322,8 +321,8 @@ export default function RegisterPage() {
           <Button variant="outline" onClick={onReset}>
             Reset
           </Button>
-          <Button type="submit" form="register-form">
-            Register
+          <Button type="submit" form="signup-form">
+            Signup
           </Button>
         </Field>
       </CardFooter>

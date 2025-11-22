@@ -71,9 +71,9 @@ export default function LoginPage() {
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
           Don&apos;t have an an account?
-          <a href="/register" className="text-primary font-mono">
+          <a href="/signup" className="text-primary font-mono">
             {" "}
-            Register now
+            Signup now
           </a>
           <div>{loginMessage}</div>
         </CardDescription>
