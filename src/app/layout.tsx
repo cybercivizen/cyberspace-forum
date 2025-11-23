@@ -29,7 +29,7 @@ export default async function RootLayout({
 }>) {
   const session = await getSession();
 
-  const email = session?.email as string | undefined;
+  const username = session?.username as string | undefined;
   const isAdmin = session?.isAdmin as boolean | undefined;
 
   return (
@@ -47,8 +47,8 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col h-screen">
-            <NavBar email={email} isAdmin={isAdmin} />
-            <main className="flex relative h-screen">
+            <NavBar username={username} isAdmin={isAdmin} />
+            <main className="flex relative h-screen items-center justify-center flex-col">
               {children}
               <Toaster />
             </main>

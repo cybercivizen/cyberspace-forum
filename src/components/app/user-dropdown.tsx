@@ -11,21 +11,23 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { logout } from "../../lib/logout";
+import { useRouter } from "next/navigation";
 
 export function UserDropdown({
-  email,
+  username,
   isAdmin,
 }: {
-  email?: string;
+  username?: string;
   isAdmin?: boolean;
 }) {
+  const router = useRouter();
   return (
     <>
       <div className="flex">
         <Avatar className="content-center mr-2">
           <AvatarImage
             className="bg-white"
-            src="https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png"
+            src="/profile-pic.jpg"
             alt="@shadcn"
           />
           <AvatarFallback>Cy</AvatarFallback>
@@ -33,14 +35,16 @@ export function UserDropdown({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="content-center text-gray-100 hover:text-gray-400 cursor-pointer">
-              {email}
+              {username}
               <ChevronDownIcon className="inline-block ml-1 h-4 w-4" />
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/profile")}>
+                Profile
+              </DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               {isAdmin && (
                 <>

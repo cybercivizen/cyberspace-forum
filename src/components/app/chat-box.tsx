@@ -139,11 +139,11 @@ export default function ChatBox() {
       </AlertDialog>
 
       <Card
-        className={`overflow-auto flex gap-0 flex-col w-10/12 p-0 ${
+        className={`overflow-auto flex gap-0 flex-col w-10/12 p-0 max-h-full ${
           messages.length > 0 ? "pt-4" : ""
         } shadow-2xl bg-black/50`}
       >
-        <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {messages.map((msg, index) => (
             <div
               key={index}

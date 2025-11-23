@@ -1,10 +1,10 @@
 import { UserDropdown } from "./user-dropdown";
 
 export default function NavBar({
-  email,
+  username,
   isAdmin,
 }: {
-  email?: string;
+  username?: string;
   isAdmin?: boolean;
 }) {
   return (
@@ -13,7 +13,7 @@ export default function NavBar({
         <span className="text-xl font-mono tracking-widest">
           THE ULTIMATE TERMINAL
         </span>
-        {email && <UserDropdown email={email} isAdmin={isAdmin} />}
+        {username && <UserDropdown username={username} isAdmin={isAdmin} />}
       </div>
     </div>
   );

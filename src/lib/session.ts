@@ -6,6 +6,7 @@ const encodedKey = new TextEncoder().encode(secretKey);
 
 export type SessionData = {
   userId: number;
+  username: string;
   email: string;
   isAdmin: boolean;
 };

@@ -37,6 +37,7 @@ export async function login(data: { email: string; password: string }) {
 
   const sessionData: SessionData = {
     userId: user[0].id,
+    username: user[0].username,
     email: data.email,
     isAdmin: user[0].rolesId === ROLE_ADMIN,
   };
@@ -110,6 +111,7 @@ export async function signup(data: {
 
   const sessionData: SessionData = {
     userId: newUser[0].id,
+    username: data.username.trim(),
     email: data.email,
     isAdmin: roleId === ROLE_ADMIN,
   };
