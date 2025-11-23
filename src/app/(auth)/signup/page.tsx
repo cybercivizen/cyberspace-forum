@@ -47,8 +47,9 @@ const FormSchema = z
     username: z
       .string()
       .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must be at most 20 characters"),
-    email: z.email("Invalid email address"),
+      .max(20, "Username must be at most 20 characters")
+      .trim(),
+    email: z.email("Invalid email address").trim().toLowerCase(),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z
       .string()

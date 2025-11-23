@@ -6,10 +6,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuGroup,
   DropdownMenuItem,
-} from "./ui/dropdown-menu"; // Change to shadcn import
+} from "../ui/dropdown-menu"; // Change to shadcn import
 import { ChevronDownIcon } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar"; // Change to shadcn import
-import { logout } from "../lib/logout";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar"; // Change to shadcn import
+import { logout } from "../../lib/logout";
 
 export function UserDropdown({ email }: { email: string | undefined }) {
   return (

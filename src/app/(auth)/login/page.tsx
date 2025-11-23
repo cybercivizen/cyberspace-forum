@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { login } from "@/src/lib/auth";
 
 const FormSchema = z.object({
-  email: email("Invalid email address"),
+  email: email("Invalid email address").trim().toLowerCase(),
   password: string().min(6, "Password must be at least 6 characters"),
 });
 

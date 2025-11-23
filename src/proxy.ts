@@ -7,6 +7,12 @@ const publicRoutes = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  if (path !== path.toLowerCase()) {
+    return NextResponse.redirect(
+      new URL(path.toLowerCase() + request.nextUrl.search, request.url)
+    );
+  }
   const isProtectedRoute = protectedRoutes.includes(path);
   const isPublicRoute = publicRoutes.includes(path);
 

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/src/components/theme-provider";
 
-import NavBar from "@/src/components/navbar";
+import NavBar from "@/src/components/app/navbar";
 import { Toaster } from "sonner";
 import { getSession } from "../lib/session";
 
@@ -32,6 +32,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/bg2.jpg" as="image" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen`}
       >

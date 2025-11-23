@@ -6,11 +6,14 @@ import { and, eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 
 export async function login(data: { email: string; password: string }) {
-  const isEmailExists =
-    (await db.select().from(users).where(eq(users.email, data.email)).limit(1))
-      .length > 0;
+  // Fetch the user to get the hashed password
+  const user = await db
+    .select({ password: users.password })
+    .from(users)
+    .where(eq(users.email, data.email))
+    .limit(1);
 
-  if (!isEmailExists) {
+  if (!user.length) {
     return {
       success: false,
       errors: {
@@ -19,18 +22,10 @@ export async function login(data: { email: string; password: string }) {
     };
   }
 
-  const isPasswordMatch =
-    (
-      await db
-        .select()
-        .from(users)
-        .where(
-          and(eq(users.email, data.email), eq(users.password, data.password))
-        )
-        .limit(1)
-    ).length > 0;
+  const isPasswordMatch = await bcrypt.compare(data.password, user[0].password);
 
   if (!isPasswordMatch) {
+    console.log("Incorrect password for email:", data.email);
     return {
       success: false,
       errors: {
@@ -39,7 +34,7 @@ export async function login(data: { email: string; password: string }) {
     };
   }
 
-  await createSession(data.email);
+  await createSession(data.email); // Use the processed email
 
   return {
     success: true,
@@ -96,7 +91,7 @@ export async function signup(data: {
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
   await db.insert(users).values({
-    username: data.username,
+    username: data.username.trim(),
     email: data.email,
     password: hashedPassword,
     dateOfBirth: data.dateOfBirth,
