@@ -6,12 +6,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "../ui/dropdown-menu"; // Change to shadcn import
 import { ChevronDownIcon } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar"; // Change to shadcn import
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import { logout } from "../../lib/logout";
 
-export function UserDropdown({ email }: { email: string | undefined }) {
+export function UserDropdown({
+  email,
+  isAdmin,
+}: {
+  email?: string;
+  isAdmin?: boolean;
+}) {
   return (
     <>
       <div className="flex">
@@ -35,6 +42,14 @@ export function UserDropdown({ email }: { email: string | undefined }) {
             <DropdownMenuGroup>
               <DropdownMenuItem>Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Administration</DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+
               <DropdownMenuItem onClick={() => logout()}>
                 Logout
               </DropdownMenuItem>

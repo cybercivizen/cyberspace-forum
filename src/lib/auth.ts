@@ -1,14 +1,15 @@
 "use server";
 import db from "@/src/lib/db";
 import { roles, users } from "@/src/lib/schema";
-import { createSession } from "@/src/lib/session";
+import { createSession, SessionData } from "@/src/lib/session";
 import { and, eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import { ROLE_ADMIN } from "./constants";
 
 export async function login(data: { email: string; password: string }) {
   // Fetch the user to get the hashed password
   const user = await db
-    .select({ password: users.password })
+    .select()
     .from(users)
     .where(eq(users.email, data.email))
     .limit(1);
@@ -34,7 +35,13 @@ export async function login(data: { email: string; password: string }) {
     };
   }
 
-  await createSession(data.email); // Use the processed email
+  const sessionData: SessionData = {
+    userId: user[0].id,
+    email: data.email,
+    isAdmin: user[0].rolesId === ROLE_ADMIN,
+  };
+
+  await createSession(sessionData); // Use the processed email
 
   return {
     success: true,
@@ -90,15 +97,24 @@ export async function signup(data: {
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  await db.insert(users).values({
-    username: data.username.trim(),
-    email: data.email,
-    password: hashedPassword,
-    dateOfBirth: data.dateOfBirth,
-    rolesId: roleId,
-  });
+  const newUser = await db
+    .insert(users)
+    .values({
+      username: data.username.trim(),
+      email: data.email,
+      password: hashedPassword,
+      dateOfBirth: data.dateOfBirth,
+      rolesId: roleId,
+    })
+    .returning({ id: users.id, email: users.email, roleId: users.rolesId });
 
-  await createSession(data.email);
+  const sessionData: SessionData = {
+    userId: newUser[0].id,
+    email: data.email,
+    isAdmin: roleId === ROLE_ADMIN,
+  };
+
+  await createSession(sessionData);
 
   return {
     success: true,

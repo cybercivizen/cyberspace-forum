@@ -28,7 +28,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
+
   const email = session?.email as string | undefined;
+  const isAdmin = session?.isAdmin as boolean | undefined;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -45,7 +47,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col h-screen">
-            <NavBar email={email} />
+            <NavBar email={email} isAdmin={isAdmin} />
             <main className="flex relative h-screen">
               {children}
               <Toaster />

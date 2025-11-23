@@ -4,6 +4,12 @@ import { cookies } from "next/headers";
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
 
+export type SessionData = {
+  userId: number;
+  email: string;
+  isAdmin: boolean;
+};
+
 export async function getSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session")?.value;
@@ -11,12 +17,11 @@ export async function getSession() {
   return payload || null;
 }
 
-// Should replace with a proper user ID and more data as needed
-export async function createSession(email: string) {
+export async function createSession(sessionData: SessionData) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encrypt({ email, expiresAt });
+  const session = await encrypt({ ...sessionData, expiresAt });
   const cookieStore = await cookies();
-
+  console.log("sessionData", sessionData);
   cookieStore.set("session", session, {
     httpOnly: true,
     secure: true,
