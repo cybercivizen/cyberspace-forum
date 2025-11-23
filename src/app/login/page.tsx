@@ -75,7 +75,6 @@ export default function LoginPage() {
             {" "}
             Signup now
           </a>
-          <div>{loginMessage}</div>
         </CardDescription>
       </CardHeader>
       <CardContent>
