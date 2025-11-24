@@ -217,7 +217,11 @@ export default function ChatBox({ username }: { username: string }) {
               placeholder="Type your message..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                message.length <= maxCharacters &&
+                handleSend()
+              }
               className="pr-10" // Add padding-right to avoid overlap
             />
             <div
