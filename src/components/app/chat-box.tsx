@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Card } from "../ui/card";
@@ -18,7 +19,7 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 
-export default function ChatBox() {
+export default function ChatBox({ username }: { username: string }) {
   const maxCharacters = 100;
 
   const [message, setMessage] = useState("");
@@ -145,48 +146,60 @@ export default function ChatBox() {
       >
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {messages.map((msg, index) => (
-            <div
-              key={index}
-              className="flex wrap-anywhere"
-              onMouseEnter={() => setIsMsgHovered(index)}
-              onMouseLeave={() => handleMsgHover()}
-            >
-              <Card className="w-fit p-3 bg-accent z-0">{msg}</Card>
-              {isMsgHovered === index && (
-                <ChevronDownIcon
-                  className={`w-5 h-5 self-center ml-3 cursor-pointer ${
-                    showOptions === index ? "-rotate-90" : ""
-                  }`}
-                  onClick={() => handleMsgOptions(index)}
-                />
-              )}
-              {showOptions === index && (
-                <div className="flex">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <TrashIcon
-                        className="w-5 h-5 ml-2 self-center cursor-pointer"
-                        onClick={() => handleMsgDelete(index)}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Delete message</p>
-                    </TooltipContent>
-                  </Tooltip>
+            <div key={index} className="flex gap-5 items-end">
+              <Image
+                src={"/profile-pic.jpg"}
+                className="rounded-full w-13 h-13"
+                alt={"Avatar"}
+                width={0}
+                height={0}
+              ></Image>
+              <div className="flex-col">
+                <div className="pb-2 font-mono opacity-55">{username}</div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <PencilIcon
-                        className="w-5 h-5 ml-2 self-center cursor-pointer"
-                        onClick={() => handleMsgEdit(index)}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Edit message</p>
-                    </TooltipContent>
-                  </Tooltip>
+                <div
+                  className="flex wrap-anywhere"
+                  onMouseEnter={() => setIsMsgHovered(index)}
+                  onMouseLeave={() => handleMsgHover()}
+                >
+                  <Card className="w-fit p-3 py-2 bg-accent z-0">{msg}</Card>
+                  {isMsgHovered === index && (
+                    <ChevronDownIcon
+                      className={`w-5 h-5 self-center ml-3 cursor-pointer ${
+                        showOptions === index ? "-rotate-90" : ""
+                      }`}
+                      onClick={() => handleMsgOptions(index)}
+                    />
+                  )}
+                  {showOptions === index && (
+                    <div className="flex">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <TrashIcon
+                            className="w-5 h-5 ml-2 self-center cursor-pointer"
+                            onClick={() => handleMsgDelete(index)}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Delete message</p>
+                        </TooltipContent>
+                      </Tooltip>
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <PencilIcon
+                            className="w-5 h-5 ml-2 self-center cursor-pointer"
+                            onClick={() => handleMsgEdit(index)}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Edit message</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
