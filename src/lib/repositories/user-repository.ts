@@ -3,7 +3,7 @@ import db from "../db/db";
 import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
-import { getRoleId, ROLE_NAMES } from "../constants";
+import { getRoleId } from "../constants";
 
 export async function getUserBy(
   field: "id" | "email" | "username",
@@ -25,7 +25,23 @@ export async function getUserBy(
       throw new Error("Invalid field");
   }
 
-  return await db.select().from(users).where(whereClause).limit(1);
+  return (await db.select().from(users).where(whereClause).limit(1))[0];
+}
+
+export async function getUserProfile(id: number) {
+  return (
+    await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        dateOfBirth: users.dateOfBirth,
+        rolesId: users.rolesId,
+      })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1)
+  )[0];
 }
 
 export async function createUser(data: {
@@ -50,4 +66,15 @@ export async function createUser(data: {
       })
       .returning({ id: users.id, email: users.email, roleId: users.rolesId })
   )[0];
+}
+
+export async function updateUserProfile(
+  id: number,
+  data: {
+    username?: string;
+    email?: string;
+    dateOfBirth?: Date;
+  }
+) {
+  // Call db update method
 }

@@ -1,14 +1,14 @@
 "use server";
-import { createSession, SessionData } from "@/src/lib/auth/session";
+import { createSession } from "@/src/lib/auth/session";
 import bcrypt from "bcrypt";
 import { ROLE_ADMIN } from "../constants";
 import { createUser, getUserBy } from "../repositories/user-repository";
+import { SessionData } from "../types";
 
 export async function login(data: { email: string; password: string }) {
-  // Fetch the user to get the hashed password
   const user = await getUserBy("email", data.email);
 
-  if (!user.length) {
+  if (!user) {
     return {
       success: false,
       errors: {
@@ -17,7 +17,7 @@ export async function login(data: { email: string; password: string }) {
     };
   }
 
-  const isPasswordMatch = await bcrypt.compare(data.password, user[0].password);
+  const isPasswordMatch = await bcrypt.compare(data.password, user.password);
 
   if (!isPasswordMatch) {
     return {
@@ -29,10 +29,10 @@ export async function login(data: { email: string; password: string }) {
   }
 
   const sessionData: SessionData = {
-    userId: user[0].id,
-    username: user[0].username,
+    userId: user.id,
+    username: user.username,
     email: data.email,
-    isAdmin: user[0].rolesId === ROLE_ADMIN,
+    isAdmin: user.rolesId === ROLE_ADMIN,
   };
 
   await createSession(sessionData); // Use the processed email
@@ -52,10 +52,9 @@ export async function signup(data: {
   role: "admin" | "user";
   termsAccepted: boolean;
 }) {
-  const isUsernameTaken =
-    (await getUserBy("username", data.username)).length > 0;
+  const isUsernameTaken = await getUserBy("username", data.username);
 
-  const isEmailTaken = (await getUserBy("email", data.email)).length > 0;
+  const isEmailTaken = await getUserBy("email", data.email);
 
   if (isEmailTaken || isUsernameTaken) {
     return {

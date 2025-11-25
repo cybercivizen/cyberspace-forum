@@ -1,15 +1,9 @@
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { SessionData } from "../types";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
-
-export type SessionData = {
-  userId: number;
-  username: string;
-  email: string;
-  isAdmin: boolean;
-};
 
 export async function getSession() {
   const cookieStore = await cookies();
@@ -22,7 +16,6 @@ export async function createSession(sessionData: SessionData) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   const session = await encrypt({ ...sessionData, expiresAt });
   const cookieStore = await cookies();
-  console.log("sessionData", sessionData);
   cookieStore.set("session", session, {
     httpOnly: true,
     secure: true,
@@ -51,7 +44,5 @@ export async function decrypt(session: string | undefined = "") {
       algorithms: ["HS256"],
     });
     return payload;
-  } catch (error) {
-    console.log("Failed to verify session", error);
-  }
+  } catch (error) {}
 }

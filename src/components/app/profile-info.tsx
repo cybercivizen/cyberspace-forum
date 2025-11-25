@@ -42,48 +42,56 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { SessionData, UserProfile } from "@/src/lib/types";
+import { toast } from "sonner";
 
-const FormSchema = z
-  .object({
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must be at most 20 characters")
-      .trim(),
-    email: z.email("Invalid email address").trim().toLowerCase(),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    confirmPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters"),
-    dateOfBirth: z.date("Invalid date of birth"),
-    role: z.enum(["admin", "user"], "No account role selected"),
-    termsAccepted: z.boolean().refine((val) => val === true, {
-      message: "You must accept the terms and conditions",
-    }),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+const FormSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be at most 20 characters")
+    .trim(),
+  email: z.email("Invalid email address").trim().toLowerCase(),
+  dateOfBirth: z.date("Invalid date of birth"),
+});
 
 type FormInput = z.infer<typeof FormSchema>;
 
-export default function ProfileInfo({ username }: { username: string }) {
+export default function ProfileInfo({
+  userProfile,
+}: {
+  userProfile: UserProfile;
+}) {
   const [openCalendar, setOpenCalendar] = React.useState(false);
 
-  const { handleSubmit, control, reset, setError } = useForm<FormInput>({
+  const { username, email, dateOfBirth } = userProfile;
+
+  const defaultFormValues: FormInput = {
+    username: username,
+    email: email,
+    dateOfBirth: dateOfBirth,
+  };
+
+  const {
+    handleSubmit,
+    control,
+    reset,
+    setError,
+    formState: { isDirty, isValid },
+  } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      dateOfBirth: undefined,
-      role: "user",
-      termsAccepted: false,
-    },
+    defaultValues: defaultFormValues,
   });
+
+  function onSaveChanges(data: FormInput) {
+    console.log("Saved data:", data);
+    toast.success("Changes has been saved succesfully!");
+  }
+
+  function onReset() {
+    reset();
+  }
 
   return (
     <div className="flex justify-center items-center h-full w-[80%] gap-20">
@@ -119,138 +127,115 @@ export default function ProfileInfo({ username }: { username: string }) {
           <CardDescription></CardDescription>
         </CardHeader>
         <CardContent>
-          <FieldGroup>
-            <FieldSet>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="username"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Username</FieldLabel>
-                      <Input
-                        {...field}
-                        type="text"
-                        placeholder="Enter your username"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Email</FieldLabel>
-                      <Input
-                        {...field}
-                        type="text"
-                        placeholder="Enter your email"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Password</FieldLabel>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Enter your password"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Confirm Password</FieldLabel>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Confirm password"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="dateOfBirth"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Date of Birth</FieldLabel>
-                      <Popover
-                        open={openCalendar}
-                        onOpenChange={setOpenCalendar}
-                      >
-                        <PopoverTrigger asChild>
-                          <div>
-                            <Input
-                              className="text-left"
-                              id="date"
-                              aria-invalid={fieldState.invalid}
-                              value={
-                                field.value
-                                  ? field.value.toLocaleDateString()
-                                  : ""
-                              }
-                              onChange={field.onChange}
-                              placeholder="MM/DD/YYYY"
-                              readOnly
-                            />
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto overflow-hidden"
-                          align="start"
+          <form id="edit-profile-form" onSubmit={handleSubmit(onSaveChanges)}>
+            <FieldGroup>
+              <FieldSet>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="username"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Username</FieldLabel>
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder={username}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Email</FieldLabel>
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder={email}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4 items-end">
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Date of Birth</FieldLabel>
+                        <Popover
+                          open={openCalendar}
+                          onOpenChange={setOpenCalendar}
                         >
-                          <Calendar
-                            {...field}
-                            mode="single"
-                            captionLayout="dropdown"
-                            selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setOpenCalendar(false);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-            </FieldSet>
-            <FieldSeparator />
-          </FieldGroup>
+                          <PopoverTrigger asChild>
+                            <div>
+                              <Input
+                                className="text-left"
+                                id="date"
+                                aria-invalid={fieldState.invalid}
+                                value={
+                                  field.value
+                                    ? field.value.toLocaleDateString()
+                                    : ""
+                                }
+                                onChange={field.onChange}
+                                placeholder={dateOfBirth.toDateString()}
+                                readOnly
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-auto overflow-hidden"
+                            align="start"
+                          >
+                            <Calendar
+                              {...field}
+                              mode="single"
+                              captionLayout="dropdown"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                field.onChange(date);
+                                setOpenCalendar(false);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <div className="flex gap-4 w-full justify-end">
+                    <Button variant="outline" type="button" onClick={onReset}>
+                      Reset
+                    </Button>
+                    <Button
+                      type="submit"
+                      form="edit-profile-form"
+                      disabled={!isDirty || !isValid}
+                    >
+                      Save changes
+                    </Button>
+                  </div>
+                </div>
+              </FieldSet>
+
+              <FieldSeparator />
+            </FieldGroup>
+          </form>
         </CardContent>
         <CardFooter>{/* */}</CardFooter>
       </Card>
