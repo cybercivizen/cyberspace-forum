@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/src/components/theme-provider";
 
 import NavBar from "@/src/components/app/navbar";
 import { Toaster } from "sonner";
-import { getSession } from "../lib/session";
+import { getSession } from "../lib/auth/session";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -212,7 +212,6 @@ export default function ChatBox({ username }: { username: string }) {
         >
           <div className="relative flex-1">
             {" "}
-            {/* Wrapper for positioning */}
             <Input
               placeholder="Type your message..."
               value={message}

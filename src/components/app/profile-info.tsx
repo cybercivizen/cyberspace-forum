@@ -1,4 +1,16 @@
 "use client";
+import { Button } from "@/src/components/ui/button";
+import { Calendar } from "@/src/components/ui/calendar";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/src/components/ui/card";
+import { Checkbox } from "@/src/components/ui/checkbox";
+
 import {
   Field,
   FieldError,
@@ -7,24 +19,12 @@ import {
   FieldSeparator,
   FieldSet,
 } from "@/src/components/ui/field";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
 import { Input } from "@/src/components/ui/input";
-import { Calendar } from "@/src/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
-import { Button } from "@/src/components/ui/button";
-import React from "react";
-import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -34,13 +34,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { Separator } from "@/src/components/ui/separator";
+import { getSession } from "@/src/lib/auth/session";
+import Image from "next/image";
+import React from "react";
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { signup } from "@/src/lib/auth/auth";
 
 const FormSchema = z
   .object({
@@ -67,8 +68,9 @@ const FormSchema = z
 
 type FormInput = z.infer<typeof FormSchema>;
 
-export default function SignupPage() {
-  const router = useRouter();
+export default function ProfileInfo({ username }: { username: string }) {
+  const [openCalendar, setOpenCalendar] = React.useState(false);
+
   const { handleSubmit, control, reset, setError } = useForm<FormInput>({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
@@ -83,52 +85,40 @@ export default function SignupPage() {
     },
   });
 
-  const [openCalendar, setOpenCalendar] = React.useState(false);
-
-  const roles = ["Admin", "User"];
-
-  async function onSubmit(data: FormInput) {
-    const result = await signup(data);
-    console.log("Registration result:", result);
-    if (!result.success && result.errors) {
-      if (result.errors.email) {
-        setError("email", {
-          type: "manual",
-          message: result.errors.email,
-        });
-      }
-
-      if (result.errors.username) {
-        setError("username", {
-          type: "manual",
-          message: result.errors.username,
-        });
-      }
-    } else {
-      reset();
-      toast.success("Account has been created succesfully!");
-      router.push("/login");
-    }
-  }
-
-  async function onReset() {
-    reset();
-  }
-
   return (
-    <Card className="w-2/4 m-auto z-10">
-      <CardHeader>
-        <CardTitle className="text-2xl">Signup</CardTitle>
-        <CardDescription>
-          Create a new <span className="font-mono">TERMINAL</span> account.
-          Already have an account?{" "}
-          <a href="/login" className="text-primary font-mono">
-            Login
-          </a>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
+    <div className="flex justify-center items-center h-full w-[80%] gap-20">
+      <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50">
+        <CardHeader>
+          <CardTitle className="text-2xl opacity-90">Profile</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-6">
+            <Image
+              src={"/profile-pic.jpg"}
+              className="rounded-full"
+              alt={"Avatar"}
+              width={70}
+              height={70}
+            ></Image>
+            <div className="flex flex-col gap-6">
+              <div className="text-2xl text-white ml-4 font-mono">
+                {username}
+              </div>
+              <Button variant="outline" className="ml-4">
+                Change Picture
+              </Button>
+            </div>
+          </div>
+          <Separator className="my-8" />
+          <CardTitle className="text-2xl opacity-90">Joined Groups</CardTitle>
+        </CardContent>
+      </Card>
+      <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50">
+        <CardHeader>
+          <CardTitle className="text-2xl opacity-90">Infos</CardTitle>
+          <CardDescription></CardDescription>
+        </CardHeader>
+        <CardContent>
           <FieldGroup>
             <FieldSet>
               <div className="grid grid-cols-2 gap-4">
@@ -257,76 +247,13 @@ export default function SignupPage() {
                     </Field>
                   )}
                 />
-                <Controller
-                  name="role"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Account Type</FieldLabel>
-                      <Select
-                        name={field.name}
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger aria-invalid={fieldState.invalid}>
-                          <SelectValue placeholder="Select a type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Types</SelectLabel>
-                            {roles.map((type) => (
-                              <SelectItem key={type} value={type.toLowerCase()}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
               </div>
             </FieldSet>
             <FieldSeparator />
-            <FieldSet>
-              <Controller
-                name="termsAccepted"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    orientation="horizontal"
-                    className="items-center"
-                    data-invalid={fieldState.invalid}
-                  >
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      name={field.name}
-                    />
-                    <FieldLabel>I agree to the Terms and Conditions</FieldLabel>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </FieldSet>
           </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Field orientation="horizontal" className="justify-end gap-4">
-          <Button variant="outline" onClick={onReset}>
-            Reset
-          </Button>
-          <Button type="submit" form="signup-form">
-            Signup
-          </Button>
-        </Field>
-      </CardFooter>
-    </Card>
+        </CardContent>
+        <CardFooter>{/* */}</CardFooter>
+      </Card>
+    </div>
   );
 }

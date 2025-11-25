@@ -1,18 +1,12 @@
 "use server";
-import db from "@/src/lib/db";
-import { roles, users } from "@/src/lib/schema";
-import { createSession, SessionData } from "@/src/lib/session";
-import { and, eq } from "drizzle-orm";
+import { createSession, SessionData } from "@/src/lib/auth/session";
 import bcrypt from "bcrypt";
-import { ROLE_ADMIN } from "./constants";
+import { ROLE_ADMIN } from "../constants";
+import { createUser, getUserBy } from "../repositories/user-repository";
 
 export async function login(data: { email: string; password: string }) {
   // Fetch the user to get the hashed password
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, data.email))
-    .limit(1);
+  const user = await getUserBy("email", data.email);
 
   if (!user.length) {
     return {
@@ -26,7 +20,6 @@ export async function login(data: { email: string; password: string }) {
   const isPasswordMatch = await bcrypt.compare(data.password, user[0].password);
 
   if (!isPasswordMatch) {
-    console.log("Incorrect password for email:", data.email);
     return {
       success: false,
       errors: {
@@ -59,32 +52,10 @@ export async function signup(data: {
   role: "admin" | "user";
   termsAccepted: boolean;
 }) {
-  console.log("Saving user:", data);
-
-  const roleResult = await db
-    .select({ id: roles.id })
-    .from(roles)
-    .where(eq(roles.name, data.role))
-    .limit(1);
-
-  if (!roleResult.length) {
-    throw new Error(`Role '${data.role}' not found`);
-  }
-
-  const roleId = roleResult[0].id;
-
   const isUsernameTaken =
-    (
-      await db
-        .select()
-        .from(users)
-        .where(eq(users.username, data.username))
-        .limit(1)
-    ).length > 0;
+    (await getUserBy("username", data.username)).length > 0;
 
-  const isEmailTaken =
-    (await db.select().from(users).where(eq(users.email, data.email)).limit(1))
-      .length > 0;
+  const isEmailTaken = (await getUserBy("email", data.email)).length > 0;
 
   if (isEmailTaken || isUsernameTaken) {
     return {
@@ -96,24 +67,15 @@ export async function signup(data: {
     };
   }
 
-  const hashedPassword = await bcrypt.hash(data.password, 10);
-
-  const newUser = await db
-    .insert(users)
-    .values({
-      username: data.username.trim(),
-      email: data.email,
-      password: hashedPassword,
-      dateOfBirth: data.dateOfBirth,
-      rolesId: roleId,
-    })
-    .returning({ id: users.id, email: users.email, roleId: users.rolesId });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { termsAccepted, ...dataToInsert } = data;
+  const newUser = await createUser(dataToInsert);
 
   const sessionData: SessionData = {
-    userId: newUser[0].id,
+    userId: newUser.id,
     username: data.username.trim(),
     email: data.email,
-    isAdmin: roleId === ROLE_ADMIN,
+    isAdmin: newUser.roleId === ROLE_ADMIN,
   };
 
   await createSession(sessionData);

@@ -1,5 +1,5 @@
 import ChatBox from "@/src/components/app/chat-box";
-import { getSession } from "../lib/session";
+import { getSession } from "../lib/auth/session";
 
 export default async function Home() {
   const session = await getSession();

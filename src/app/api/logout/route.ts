@@ -1,5 +1,5 @@
-import { logout } from "@/src/lib/logout";
-import { getSession } from "@/src/lib/session";
+import { logout } from "@/src/lib/auth/logout";
+import { getSession } from "@/src/lib/auth/session";
 import { NextResponse } from "next/server";
 
 export async function GET() {

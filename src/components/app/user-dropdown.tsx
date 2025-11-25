@@ -10,7 +10,7 @@ import {
 } from "../ui/dropdown-menu"; // Change to shadcn import
 import { ChevronDownIcon } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { logout } from "../../lib/logout";
+import { logout } from "../../lib/auth/logout";
 import { useRouter } from "next/navigation";
 
 export function UserDropdown({

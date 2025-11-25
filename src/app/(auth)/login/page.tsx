@@ -21,7 +21,7 @@ import { Controller, useForm } from "react-hook-form";
 import z, { email, string } from "zod";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { login } from "@/src/lib/auth";
+import { login } from "@/src/lib/auth/auth";
 
 const FormSchema = z.object({
   email: email("Invalid email address").trim().toLowerCase(),
