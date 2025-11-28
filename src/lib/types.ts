@@ -12,3 +12,10 @@ export type UserProfile = {
   dateOfBirth: Date;
   rolesId: number;
 };
+
+export type Message = {
+  id: number;
+  content: string;
+  createdAt: Date;
+  userId: number;
+};

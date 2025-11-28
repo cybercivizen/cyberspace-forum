@@ -1,5 +1,11 @@
 import { relations } from "drizzle-orm";
-import { date, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import {
+  date,
+  integer,
+  pgTable,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -17,11 +23,28 @@ export const roles = pgTable("roles", {
   name: varchar({ length: 100 }).notNull().unique(),
 });
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const messages = pgTable("messages", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  content: varchar({ length: 200 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  userId: integer("user_id")
+    .references(() => users.id)
+    .notNull(),
+});
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  user: one(users, {
+    fields: [messages.userId],
+    references: [users.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ one, many }) => ({
   role: one(roles, {
     fields: [users.rolesId],
     references: [roles.id],
   }),
+  many: many(messages),
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({

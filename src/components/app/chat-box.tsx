@@ -18,12 +18,24 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+import { Message, UserProfile } from "@/src/lib/types";
+import { createMessage } from "@/src/lib/repositories/msg-repository";
 
-export default function ChatBox({ username }: { username: string }) {
+export default function ChatBox({
+  userProfile,
+  initialMessages,
+}: {
+  userProfile: UserProfile;
+  initialMessages: Message[];
+}) {
   const maxCharacters = 100;
 
+  const { username } = userProfile ? userProfile : { username: "Guest" };
+
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<string[]>(
+    initialMessages.map((msg) => msg.content)
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -37,11 +49,11 @@ export default function ChatBox({ username }: { username: string }) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
-  const handleSend = () => {
-    console.log("Message sent:", message);
+  const handleSend = async () => {
     if (message.trim() === "") return;
     setMessages([...messages, message]);
     setMessage("");
+    await createMessage({ userId: userProfile.id, content: message });
   };
 
   const handleMsgOptions = (index: number) => {
@@ -146,7 +158,7 @@ export default function ChatBox({ username }: { username: string }) {
       >
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {messages.map((msg, index) => (
-            <div key={index} className="flex gap-5 items-end">
+            <div key={msg} className="flex gap-5 items-end">
               <Image
                 src={"/profile-pic.jpg"}
                 className="rounded-full w-13 h-13"
