@@ -1,3 +1,4 @@
+"use server";
 import { JWTPayload, SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { SessionData } from "../types";

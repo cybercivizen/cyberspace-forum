@@ -35,7 +35,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Separator } from "@/src/components/ui/separator";
-import { getSession } from "@/src/lib/auth/session";
+import { createSession, getSession } from "@/src/lib/auth/session";
 import Image from "next/image";
 import React from "react";
 import { useEffect } from "react";
@@ -44,6 +44,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SessionData, UserProfile } from "@/src/lib/types";
 import { toast } from "sonner";
+import { modifyUser } from "@/src/lib/repositories/user-repository";
 
 const FormSchema = z.object({
   username: z
@@ -55,7 +56,7 @@ const FormSchema = z.object({
   dateOfBirth: z.date("Invalid date of birth"),
 });
 
-type FormInput = z.infer<typeof FormSchema>;
+export type FormInput = z.infer<typeof FormSchema>;
 
 export default function ProfileInfo({
   userProfile,
@@ -84,14 +85,35 @@ export default function ProfileInfo({
     defaultValues: defaultFormValues,
   });
 
-  function onSaveChanges(data: FormInput) {
+  async function onSaveChanges(data: FormInput) {
     console.log("Saved data:", data);
-    toast.success("Changes has been saved succesfully!");
+    const result = await modifyUser(data, userProfile);
+    if (!result.success && result.errors) {
+      if (result.errors.username) {
+        setError("username", {
+          type: "manual",
+          message: result.errors.username,
+        });
+      }
+    } else {
+      const newSessionData: SessionData = {
+        userId: userProfile.id,
+        username: data.username,
+        email: userProfile.email,
+        isAdmin: userProfile.rolesId === 2,
+      };
+      await createSession(newSessionData);
+      toast.success("Changes has been saved succesfully!");
+    }
   }
 
   function onReset() {
     reset();
   }
+
+  const onChangeEmail = () => {
+    toast.success("Confirmation email has been sent to your address.");
+  };
 
   return (
     <div className="flex justify-center items-center h-full w-[80%] gap-20">
@@ -119,6 +141,9 @@ export default function ProfileInfo({
           </div>
           <Separator className="my-8" />
           <CardTitle className="text-2xl opacity-90">Joined Groups</CardTitle>
+          <div className="text-xl text-muted-foreground text-center h-full content-center">
+            Coming soon...
+          </div>
         </CardContent>
       </Card>
       <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50">
@@ -149,24 +174,19 @@ export default function ProfileInfo({
                       </Field>
                     )}
                   />
-                  <Controller
-                    name="email"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel>Email</FieldLabel>
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder={email}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
+
+                  <Field>
+                    <FieldLabel>Email</FieldLabel>
+                    <div className="relative">
+                      <Input type="text" placeholder={email} disabled />
+                      <div
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground cursor-pointer underline"
+                        onClick={onChangeEmail}
+                      >
+                        Change
+                      </div>
+                    </div>
+                  </Field>
                 </div>
                 <div className="grid grid-cols-2 gap-4 items-end">
                   <Controller
@@ -236,8 +256,10 @@ export default function ProfileInfo({
               <FieldSeparator />
             </FieldGroup>
           </form>
+          <div className="text-xl text-muted-foreground text-center h-full content-center">
+            Coming soon...
+          </div>
         </CardContent>
-        <CardFooter>{/* */}</CardFooter>
       </Card>
     </div>
   );

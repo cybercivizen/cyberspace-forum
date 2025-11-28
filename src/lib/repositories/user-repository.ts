@@ -4,6 +4,8 @@ import { users } from "../db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { getRoleId } from "../constants";
+import { FormInput } from "@/src/components/app/profile-info";
+import { UserProfile } from "../types";
 
 export async function getUserBy(
   field: "id" | "email" | "username",
@@ -66,6 +68,23 @@ export async function createUser(data: {
       })
       .returning({ id: users.id, email: users.email, roleId: users.rolesId })
   )[0];
+}
+
+export async function modifyUser(data: FormInput, userProfile: UserProfile) {
+  const isUsernameTaken = await getUserBy("username", data.username);
+  if (isUsernameTaken && data.username !== userProfile.username) {
+    return {
+      success: false,
+      errors: {
+        username: "Username is already taken",
+      },
+    };
+  }
+  await db
+    .update(users)
+    .set({ username: data.username, dateOfBirth: data.dateOfBirth })
+    .where(eq(users.id, userProfile.id));
+  return { success: true, errors: null };
 }
 
 export async function updateUserProfile(
