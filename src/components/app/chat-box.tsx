@@ -65,11 +65,14 @@ export default function ChatBox({
 
   const handleSend = async () => {
     if (message.content.trim() === "") return;
-    setMessages([...messages, message]);
     const newMessage = await createMessage({
       userId: userProfile.id,
       content: message.content,
     });
+    setMessages([
+      ...messages,
+      { content: message.content, id: newMessage.id, createdAt: new Date() },
+    ]);
     setMessage({ content: "", id: newMessage.id });
   };
 
@@ -218,14 +221,20 @@ export default function ChatBox({
             <div key={msg.id} className="flex gap-5 items-end">
               <Image
                 src={userProfile.profilePictureUrl || "/default-avatar.png"}
-                className="rounded-full w-13 h-13"
+                className="rounded-full"
                 alt={"Avatar"}
-                width={0}
-                height={0}
+                width={42}
+                height={42}
               ></Image>
-              <div className="flex-col relative w-full">
-                <div className="pb-2 font-mono opacity-55">{username}</div>
-
+              <div className="flex-col w-full">
+                <div className="pb-2 flex items-center gap-2">
+                  <div className="font-mono opacity-55">{username}</div>
+                  {isMsgHovered === msg.id && (
+                    <span className="text-[0.7rem] opacity-40 w-fit">
+                      {msg.createdAt && formatMessageTime(msg.createdAt)}
+                    </span>
+                  )}
+                </div>
                 <div
                   className="flex wrap-anywhere w-full"
                   onMouseEnter={() => setIsMsgHovered(msg.id)}
@@ -242,9 +251,6 @@ export default function ChatBox({
                         }`}
                         onClick={() => handleMsgOptions(msg.id)}
                       />
-                      <div className="absolute top-1 left-26 text-[0.7rem] opacity-40 w-fit">
-                        {msg.createdAt && formatMessageTime(msg.createdAt)}
-                      </div>
                     </>
                   )}
                   {showOptions === msg.id && (
@@ -313,7 +319,10 @@ export default function ChatBox({
           </div>
           <Button
             onClick={() => handleSend()}
-            disabled={message.content.length > maxCharacters}
+            disabled={
+              message.content.length > maxCharacters ||
+              message.content.trim() === ""
+            }
           >
             Send
           </Button>

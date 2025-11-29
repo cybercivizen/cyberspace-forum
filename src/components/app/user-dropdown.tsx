@@ -30,9 +30,9 @@ export function UserDropdown({
           <AvatarImage
             className="bg-white"
             src={profilePictureUrl}
-            alt="@shadcn"
+            alt={`${username} avatar`}
           />
-          <AvatarFallback>Cy</AvatarFallback>
+          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

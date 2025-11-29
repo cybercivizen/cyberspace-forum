@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { modifyUser } from "@/src/lib/repositories/user-repository";
 import { useUploadThing } from "@/src/lib/utils";
 import { Camera } from "lucide-react"; // or any icon library
+import { useRouter } from "next/navigation";
 
 const FormSchema = z.object({
   username: z
@@ -58,6 +59,7 @@ export default function ProfileInfo({
 }: {
   userProfile: UserProfile;
 }) {
+  const router = useRouter();
   const popoverId = useId(); // Generate stable ID
   const [openCalendar, setOpenCalendar] = React.useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState(
@@ -97,7 +99,8 @@ export default function ProfileInfo({
   const { startUpload, isUploading } = useUploadThing("profilePicture", {
     onClientUploadComplete: (res) => {
       if (res && res.length > 0) {
-        setProfilePicUrl(res[0].url);
+        setProfilePicUrl(res[0].ufsUrl);
+        router.refresh();
         toast.success("Profile picture updated!");
       }
     },
@@ -170,6 +173,7 @@ export default function ProfileInfo({
     const croppedFile = await getCroppedImg();
     if (croppedFile) {
       await startUpload([croppedFile]);
+
       setCropDialogOpen(false);
     }
   };
@@ -206,8 +210,8 @@ export default function ProfileInfo({
 
   return (
     <>
-      <div className="flex justify-center items-center h-full w-[80%] gap-20">
-        <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50">
+      <div className="flex flex-col lg:flex-row justify-center items-center h-full w-[80%] gap-20">
+        <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50 w-full">
           <CardHeader>
             <CardTitle className="text-2xl opacity-90">Profile</CardTitle>
           </CardHeader>
@@ -215,11 +219,11 @@ export default function ProfileInfo({
             <div className="flex gap-6">
               <div className="relative">
                 <Image
-                  src={profilePicUrl}
+                  src={userProfile.profilePictureUrl || "/default-avatar.png"}
                   className={`rounded-full ${
                     isUploading ? "opacity-50" : "opacity-100"
                   }`}
-                  alt={"Avatar"}
+                  alt={"default-avatar"}
                   width={70}
                   height={70}
                 />
@@ -245,12 +249,9 @@ export default function ProfileInfo({
             </div>
             <Separator className="my-8" />
             <CardTitle className="text-2xl opacity-90">Joined Groups</CardTitle>
-            <div className="text-xl text-muted-foreground text-center h-full content-center">
-              Coming soon...
-            </div>
           </CardContent>
         </Card>
-        <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50">
+        <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50 w-full">
           <CardHeader>
             <CardTitle className="text-2xl opacity-90">Infos</CardTitle>
             <CardDescription></CardDescription>
@@ -358,9 +359,7 @@ export default function ProfileInfo({
                 <FieldSeparator />
               </FieldGroup>
             </form>
-            <div className="text-xl text-muted-foreground text-center h-full content-center">
-              Coming soon...
-            </div>
+            <CardTitle className="text-2xl opacity-90 mt-8">Friends</CardTitle>
           </CardContent>
         </Card>
       </div>
