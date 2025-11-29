@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { getRoleId } from "../constants";
 import { FormInput } from "@/src/components/app/profile-info";
 import { UserProfile } from "../types";
+import { profile } from "console";
 
 export async function getUserBy(
   field: "id" | "email" | "username",
@@ -39,6 +40,7 @@ export async function getUserProfile(id: number) {
         email: users.email,
         dateOfBirth: users.dateOfBirth,
         rolesId: users.rolesId,
+        profilePictureUrl: users.profile_picture_url,
       })
       .from(users)
       .where(eq(users.id, id))

@@ -11,11 +11,12 @@ export type UserProfile = {
   email: string;
   dateOfBirth: Date;
   rolesId: number;
+  profilePictureUrl: string | null;
 };
 
 export type Message = {
   id: number;
   content: string;
-  createdAt: Date;
-  userId: number;
+  createdAt?: Date;
+  userId?: number;
 };

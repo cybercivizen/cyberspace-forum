@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { decrypt } from "./lib/auth/session";
 
-const protectedRoutes = ["/"];
+const protectedRoutes = ["/", "/profile"];
 const publicRoutes = ["/login", "/signup"];
 
 export async function proxy(request: NextRequest) {
@@ -25,6 +25,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isPublicRoute && session?.email) {
+    console.log(session);
     return NextResponse.redirect(new URL("/", request.url));
   }
 }

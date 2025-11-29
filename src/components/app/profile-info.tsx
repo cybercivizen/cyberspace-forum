@@ -1,5 +1,9 @@
 "use client";
-import { Button } from "@/src/components/ui/button";
+import { useState, useId } from "react"; // Add useId
+import ReactCrop, { Crop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import { Button } from "../ui/button";
 import { Calendar } from "@/src/components/ui/calendar";
 import {
   Card,
@@ -7,9 +11,7 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/src/components/ui/card";
-import { Checkbox } from "@/src/components/ui/checkbox";
 
 import {
   Field,
@@ -25,26 +27,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/src/components/ui/select";
+
 import { Separator } from "@/src/components/ui/separator";
-import { createSession, getSession } from "@/src/lib/auth/session";
+import { createSession } from "@/src/lib/auth/session";
 import Image from "next/image";
 import React from "react";
-import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { SessionData, UserProfile } from "@/src/lib/types";
 import { toast } from "sonner";
 import { modifyUser } from "@/src/lib/repositories/user-repository";
+import { useUploadThing } from "@/src/lib/utils";
+import { Camera } from "lucide-react"; // or any icon library
 
 const FormSchema = z.object({
   username: z
@@ -63,7 +58,21 @@ export default function ProfileInfo({
 }: {
   userProfile: UserProfile;
 }) {
+  const popoverId = useId(); // Generate stable ID
   const [openCalendar, setOpenCalendar] = React.useState(false);
+  const [profilePicUrl, setProfilePicUrl] = useState(
+    userProfile.profilePictureUrl || "/avatar.png"
+  );
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [imgSrc, setImgSrc] = useState("");
+  const [crop, setCrop] = useState<Crop>({
+    unit: "px",
+    width: 100,
+    height: 100,
+    x: 0,
+    y: 0,
+  });
+  const [imgRef, setImgRef] = useState<HTMLImageElement | null>(null);
 
   const { username, email, dateOfBirth } = userProfile;
 
@@ -84,6 +93,86 @@ export default function ProfileInfo({
     mode: "onChange",
     defaultValues: defaultFormValues,
   });
+
+  const { startUpload, isUploading } = useUploadThing("profilePicture", {
+    onClientUploadComplete: (res) => {
+      if (res && res.length > 0) {
+        setProfilePicUrl(res[0].url);
+        toast.success("Profile picture updated!");
+      }
+    },
+    onUploadError: (error: Error) => {
+      toast.error(`Upload failed: ${error.message}`);
+    },
+  });
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        // Validate minimum dimensions after image loads
+        if (img.width < 100 || img.height < 100) {
+          toast.error(
+            `Image must be at least 100x100 pixels (current: ${img.width}x${img.height})`
+          );
+          e.target.value = ""; // Reset file input
+          return;
+        }
+        setImgSrc(reader.result as string);
+        setCropDialogOpen(true);
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const getCroppedImg = async () => {
+    if (!imgRef || !crop) return;
+
+    const canvas = document.createElement("canvas");
+    const scaleX = imgRef.naturalWidth / imgRef.width;
+    const scaleY = imgRef.naturalHeight / imgRef.height;
+
+    const size = Math.min(crop.width * scaleX, crop.height * scaleY);
+
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(
+      imgRef,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      size,
+      size,
+      0,
+      0,
+      size,
+      size
+    );
+
+    return new Promise<File>((resolve) => {
+      canvas.toBlob((blob) => {
+        const file = new File([blob!], "profile.jpg", {
+          type: "image/jpeg",
+          lastModified: Date.now(),
+        });
+        resolve(file);
+      }, "image/jpeg");
+    });
+  };
+
+  const handleCropComplete = async () => {
+    const croppedFile = await getCroppedImg();
+    if (croppedFile) {
+      await startUpload([croppedFile]);
+      setCropDialogOpen(false);
+    }
+  };
 
   async function onSaveChanges(data: FormInput) {
     console.log("Saved data:", data);
@@ -116,93 +205,107 @@ export default function ProfileInfo({
   };
 
   return (
-    <div className="flex justify-center items-center h-full w-[80%] gap-20">
-      <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50">
-        <CardHeader>
-          <CardTitle className="text-2xl opacity-90">Profile</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-6">
-            <Image
-              src={"/profile-pic.jpg"}
-              className="rounded-full"
-              alt={"Avatar"}
-              width={70}
-              height={70}
-            ></Image>
-            <div className="flex flex-col gap-6">
-              <div className="text-2xl text-white ml-4 font-mono">
-                {username}
+    <>
+      <div className="flex justify-center items-center h-full w-[80%] gap-20">
+        <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50">
+          <CardHeader>
+            <CardTitle className="text-2xl opacity-90">Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-6">
+              <div className="relative">
+                <Image
+                  src={profilePicUrl}
+                  className={`rounded-full ${
+                    isUploading ? "opacity-50" : "opacity-100"
+                  }`}
+                  alt={"Avatar"}
+                  width={70}
+                  height={70}
+                />
+                <label
+                  htmlFor="profile-upload"
+                  className="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 cursor-pointer hover:bg-primary/90 transition-colors"
+                >
+                  <Camera className="w-4 h-4 text-black" />
+                </label>
+                <input
+                  id="profile-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                  disabled={isUploading}
+                />
               </div>
-              <Button variant="outline" className="ml-4">
-                Change Picture
-              </Button>
+              <div className="flex flex-col">
+                <div className="text-2xl text-white font-mono">{username}</div>
+                <div className="opacity-70">Hello, I am a user here!</div>
+              </div>
             </div>
-          </div>
-          <Separator className="my-8" />
-          <CardTitle className="text-2xl opacity-90">Joined Groups</CardTitle>
-          <div className="text-xl text-muted-foreground text-center h-full content-center">
-            Coming soon...
-          </div>
-        </CardContent>
-      </Card>
-      <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50">
-        <CardHeader>
-          <CardTitle className="text-2xl opacity-90">Infos</CardTitle>
-          <CardDescription></CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form id="edit-profile-form" onSubmit={handleSubmit(onSaveChanges)}>
-            <FieldGroup>
-              <FieldSet>
-                <div className="grid grid-cols-2 gap-4">
-                  <Controller
-                    name="username"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel>Username</FieldLabel>
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder={username}
-                          aria-invalid={fieldState.invalid}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
+            <Separator className="my-8" />
+            <CardTitle className="text-2xl opacity-90">Joined Groups</CardTitle>
+            <div className="text-xl text-muted-foreground text-center h-full content-center">
+              Coming soon...
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="flex-2 m-auto z-10 h-[80%] bg-black/50">
+          <CardHeader>
+            <CardTitle className="text-2xl opacity-90">Infos</CardTitle>
+            <CardDescription></CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form id="edit-profile-form" onSubmit={handleSubmit(onSaveChanges)}>
+              <FieldGroup>
+                <FieldSet>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Controller
+                      name="username"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel>Username</FieldLabel>
+                          <Input
+                            {...field}
+                            type="text"
+                            placeholder={username}
+                            aria-invalid={fieldState.invalid}
+                          />
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
 
-                  <Field>
-                    <FieldLabel>Email</FieldLabel>
-                    <div className="relative">
-                      <Input type="text" placeholder={email} disabled />
-                      <div
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground cursor-pointer underline"
-                        onClick={onChangeEmail}
-                      >
-                        Change
-                      </div>
-                    </div>
-                  </Field>
-                </div>
-                <div className="grid grid-cols-2 gap-4 items-end">
-                  <Controller
-                    name="dateOfBirth"
-                    control={control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel>Date of Birth</FieldLabel>
-                        <Popover
-                          open={openCalendar}
-                          onOpenChange={setOpenCalendar}
+                    <Field>
+                      <FieldLabel>Email</FieldLabel>
+                      <div className="relative">
+                        <Input type="text" placeholder={email} disabled />
+                        <div
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground cursor-pointer underline"
+                          onClick={onChangeEmail}
                         >
-                          <PopoverTrigger asChild>
-                            <div>
+                          Change
+                        </div>
+                      </div>
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 items-end">
+                    <Controller
+                      name="dateOfBirth"
+                      control={control}
+                      render={({ field, fieldState }) => (
+                        <Field data-invalid={fieldState.invalid}>
+                          <FieldLabel>Date of Birth</FieldLabel>
+                          <Popover
+                            open={openCalendar}
+                            onOpenChange={setOpenCalendar}
+                          >
+                            <PopoverTrigger asChild>
                               <Input
-                                className="text-left"
+                                className="text-left cursor-pointer"
                                 id="date"
                                 aria-invalid={fieldState.invalid}
                                 value={
@@ -214,53 +317,75 @@ export default function ProfileInfo({
                                 placeholder={dateOfBirth.toDateString()}
                                 readOnly
                               />
-                            </div>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            className="w-auto overflow-hidden"
-                            align="start"
-                          >
-                            <Calendar
-                              {...field}
-                              mode="single"
-                              captionLayout="dropdown"
-                              selected={field.value}
-                              onSelect={(date) => {
-                                field.onChange(date);
-                                setOpenCalendar(false);
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-                  <div className="flex gap-4 w-full justify-end">
-                    <Button variant="outline" type="button" onClick={onReset}>
-                      Reset
-                    </Button>
-                    <Button
-                      type="submit"
-                      form="edit-profile-form"
-                      disabled={!isDirty || !isValid}
-                    >
-                      Save changes
-                    </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto overflow-hidden"
+                              align="start"
+                            >
+                              <Calendar
+                                {...field}
+                                mode="single"
+                                captionLayout="dropdown"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                  field.onChange(date);
+                                  setOpenCalendar(false);
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                    <div className="flex gap-4 w-full justify-end">
+                      <Button variant="outline" type="button" onClick={onReset}>
+                        Reset
+                      </Button>
+                      <Button
+                        type="submit"
+                        form="edit-profile-form"
+                        disabled={!isDirty || !isValid}
+                      >
+                        Save changes
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </FieldSet>
+                </FieldSet>
 
-              <FieldSeparator />
-            </FieldGroup>
-          </form>
-          <div className="text-xl text-muted-foreground text-center h-full content-center">
-            Coming soon...
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+                <FieldSeparator />
+              </FieldGroup>
+            </form>
+            <div className="text-xl text-muted-foreground text-center h-full content-center">
+              Coming soon...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <Dialog open={cropDialogOpen} onOpenChange={setCropDialogOpen}>
+        <DialogContent className="max-w-2xl" title="upload profile picture">
+          <DialogTitle>Upload Profile Picture</DialogTitle>
+
+          <ReactCrop
+            crop={crop}
+            onChange={(c) => setCrop(c)}
+            aspect={1}
+            circularCrop
+          >
+            <img
+              ref={setImgRef}
+              src={imgSrc}
+              alt="Crop preview"
+              className="max-h-96"
+            />
+          </ReactCrop>
+          <Button onClick={handleCropComplete} disabled={isUploading}>
+            {isUploading ? "Uploading..." : "Upload"}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

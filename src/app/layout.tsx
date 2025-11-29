@@ -6,6 +6,9 @@ import { ThemeProvider } from "@/src/components/theme-provider";
 import NavBar from "@/src/components/app/navbar";
 import { Toaster } from "sonner";
 import { getSession } from "../lib/auth/session";
+import db from "../lib/db/db";
+import { users } from "../lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +35,17 @@ export default async function RootLayout({
   const username = session?.username as string | undefined;
   const isAdmin = session?.isAdmin as boolean | undefined;
 
+  // Fetch only profile picture URL if user is logged in
+  let profilePictureUrl: string | undefined;
+  if (session?.userId) {
+    const [user] = await db
+      .select({ profilePictureUrl: users.profile_picture_url })
+      .from(users)
+      .where(eq(users.id, session?.userId as number))
+      .limit(1);
+    profilePictureUrl = user?.profilePictureUrl ?? undefined;
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -47,12 +61,15 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col h-screen">
-            <NavBar username={username} isAdmin={isAdmin} />
+            <NavBar
+              username={username}
+              isAdmin={isAdmin}
+              profilePictureUrl={profilePictureUrl}
+            />
             <main className="flex relative h-screen items-center justify-center flex-col">
               {children}
               <Toaster />
             </main>
-            {/* Footer - appears on all pages */}
             <footer className="p-2 border-t bg-background/80">
               <div className="container mx-auto text-center text-sm text-muted-foreground">
                 © 2025 Terminal Chat. All rights reserved.

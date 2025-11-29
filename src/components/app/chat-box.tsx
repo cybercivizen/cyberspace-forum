@@ -19,7 +19,11 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { Message, UserProfile } from "@/src/lib/types";
-import { createMessage } from "@/src/lib/repositories/msg-repository";
+import {
+  createMessage,
+  deleteMessage,
+  updateMessage,
+} from "@/src/lib/repositories/msg-repository";
 
 export default function ChatBox({
   userProfile,
@@ -32,9 +36,16 @@ export default function ChatBox({
 
   const { username } = userProfile ? userProfile : { username: "Guest" };
 
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<string[]>(
-    initialMessages.map((msg) => msg.content)
+  const [message, setMessage] = useState<Message>({
+    content: "",
+    id: 0,
+  });
+  const [messages, setMessages] = useState<Message[]>(
+    initialMessages.map((msg) => ({
+      content: msg.content,
+      id: msg.id,
+      createdAt: msg.createdAt,
+    }))
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -43,17 +54,23 @@ export default function ChatBox({
   const [showOptions, setShowOptions] = useState<number | null>(null);
 
   const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [editedMessage, setEditedMessage] = useState("");
+  const [editedMessage, setEditedMessage] = useState<Message>({
+    content: "",
+    id: 0,
+  });
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
 
   const handleSend = async () => {
-    if (message.trim() === "") return;
+    if (message.content.trim() === "") return;
     setMessages([...messages, message]);
-    setMessage("");
-    await createMessage({ userId: userProfile.id, content: message });
+    const newMessage = await createMessage({
+      userId: userProfile.id,
+      content: message.content,
+    });
+    setMessage({ content: "", id: newMessage.id });
   };
 
   const handleMsgOptions = (index: number) => {
@@ -77,10 +94,11 @@ export default function ChatBox({
     setShowOptions(null);
   };
 
-  const handleDeleteSave = (index?: number) => {
+  const handleDeleteSave = async (index?: number) => {
     console.log("Delete message index:", index);
-    const updatedMessages = messages.filter((_, i) => i !== index);
+    const updatedMessages = messages.filter((m) => m.id !== index);
     setMessages(updatedMessages);
+    await deleteMessage(index ?? 0);
     setOpenDeleteDialog(false);
   };
 
@@ -88,16 +106,46 @@ export default function ChatBox({
     console.log("Edit message");
     setOpenEditDialog(true);
     setEditingIndex(index);
-    setEditedMessage(messages[index]);
+    setEditedMessage(messages.filter((m) => m.id === index)[0]);
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     console.log("Save edited message:", editedMessage);
-    const updatedMessages = messages.map((msg, i) =>
-      i === editingIndex ? editedMessage : msg
+    const updatedMessages = messages.map((msg) =>
+      msg.id === editingIndex ? editedMessage : msg
     );
     setMessages(updatedMessages);
+    await updateMessage(editedMessage);
     setOpenEditDialog(false);
+  };
+
+  // Helper function to check if date is today
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // Helper function to format message timestamp
+  const formatMessageTime = (date: Date) => {
+    if (isToday(date)) {
+      // Show only time if today
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    // Show full date and time if not today
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   useEffect(() => {
@@ -106,6 +154,7 @@ export default function ChatBox({
 
   return (
     <>
+      {/* MESSAGE EDIT DIALOG */}
       <AlertDialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -114,8 +163,13 @@ export default function ChatBox({
             </AlertDialogTitle>
             <Input
               placeholder="Edit your message..."
-              value={editedMessage}
-              onChange={(e) => setEditedMessage(e.target.value)}
+              value={editedMessage.content}
+              onChange={(e) =>
+                setEditedMessage({
+                  content: e.target.value,
+                  id: editedMessage.id,
+                })
+              }
             />
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -127,6 +181,7 @@ export default function ChatBox({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* MESSAGE DELETE DIALOG */}
       <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -151,45 +206,54 @@ export default function ChatBox({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* CHATBOX */}
       <Card
         className={`overflow-auto flex gap-0 flex-col w-10/12 p-0 max-h-full ${
           messages.length > 0 ? "pt-4" : ""
         } shadow-2xl bg-black/50`}
       >
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
-          {messages.map((msg, index) => (
-            <div key={msg} className="flex gap-5 items-end">
+          {/* MESSAGES */}
+          {messages.map((msg) => (
+            <div key={msg.id} className="flex gap-5 items-end">
               <Image
-                src={"/profile-pic.jpg"}
+                src={userProfile.profilePictureUrl || "/default-avatar.png"}
                 className="rounded-full w-13 h-13"
                 alt={"Avatar"}
                 width={0}
                 height={0}
               ></Image>
-              <div className="flex-col">
+              <div className="flex-col relative w-full">
                 <div className="pb-2 font-mono opacity-55">{username}</div>
 
                 <div
-                  className="flex wrap-anywhere"
-                  onMouseEnter={() => setIsMsgHovered(index)}
+                  className="flex wrap-anywhere w-full"
+                  onMouseEnter={() => setIsMsgHovered(msg.id)}
                   onMouseLeave={() => handleMsgHover()}
                 >
-                  <Card className="w-fit p-3 py-2 bg-accent z-0">{msg}</Card>
-                  {isMsgHovered === index && (
-                    <ChevronDownIcon
-                      className={`w-5 h-5 self-center ml-3 cursor-pointer ${
-                        showOptions === index ? "-rotate-90" : ""
-                      }`}
-                      onClick={() => handleMsgOptions(index)}
-                    />
+                  <Card className="w-fit p-3 py-2 bg-accent z-0">
+                    {msg.content}
+                  </Card>
+                  {isMsgHovered === msg.id && (
+                    <>
+                      <ChevronDownIcon
+                        className={`w-5 h-5 self-center ml-3 cursor-pointer ${
+                          showOptions === msg.id ? "-rotate-90" : ""
+                        }`}
+                        onClick={() => handleMsgOptions(msg.id)}
+                      />
+                      <div className="absolute top-1 left-26 text-[0.7rem] opacity-40 w-fit">
+                        {msg.createdAt && formatMessageTime(msg.createdAt)}
+                      </div>
+                    </>
                   )}
-                  {showOptions === index && (
+                  {showOptions === msg.id && (
                     <div className="flex">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <TrashIcon
                             className="w-5 h-5 ml-2 self-center cursor-pointer"
-                            onClick={() => handleMsgDelete(index)}
+                            onClick={() => handleMsgDelete(msg.id)}
                           />
                         </TooltipTrigger>
                         <TooltipContent>
@@ -201,7 +265,7 @@ export default function ChatBox({
                         <TooltipTrigger asChild>
                           <PencilIcon
                             className="w-5 h-5 ml-2 self-center cursor-pointer"
-                            onClick={() => handleMsgEdit(index)}
+                            onClick={() => handleMsgEdit(msg.id)}
                           />
                         </TooltipTrigger>
                         <TooltipContent>
@@ -216,7 +280,7 @@ export default function ChatBox({
           ))}
           <div ref={messagesEndRef} />
         </div>
-
+        {/* DIVISION BETWEEN MESSAGES AND INPUT BOX */}
         <div
           className={`flex gap-4 sticky bottom-0 ${
             messages.length > 0 ? "mt-4" : ""
@@ -226,28 +290,30 @@ export default function ChatBox({
             {" "}
             <Input
               placeholder="Type your message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              value={message.content}
+              onChange={(e) =>
+                setMessage({ content: e.target.value, id: message.id })
+              }
               onKeyDown={(e) =>
                 e.key === "Enter" &&
-                message.length <= maxCharacters &&
+                message.content.length <= maxCharacters &&
                 handleSend()
               }
               className="pr-10" // Add padding-right to avoid overlap
             />
             <div
               className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-sm  ${
-                message.length >= maxCharacters
+                message.content.length >= maxCharacters
                   ? "text-red-400"
                   : "text-muted-foreground"
               }`}
             >
-              {message.length} / {maxCharacters}
+              {message.content.length} / {maxCharacters}
             </div>
           </div>
           <Button
             onClick={() => handleSend()}
-            disabled={message.length > maxCharacters}
+            disabled={message.content.length > maxCharacters}
           >
             Send
           </Button>

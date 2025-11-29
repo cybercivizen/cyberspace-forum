@@ -3,9 +3,11 @@ import { UserDropdown } from "./user-dropdown";
 export default function NavBar({
   username,
   isAdmin,
+  profilePictureUrl,
 }: {
   username?: string;
   isAdmin?: boolean;
+  profilePictureUrl?: string;
 }) {
   return (
     <div className="sticky top-0 left-0 w-full z-10">
@@ -13,7 +15,13 @@ export default function NavBar({
         <span className="text-xl font-mono tracking-widest">
           THE ULTIMATE TERMINAL
         </span>
-        {username && <UserDropdown username={username} isAdmin={isAdmin} />}
+        {username && (
+          <UserDropdown
+            username={username}
+            isAdmin={isAdmin}
+            profilePictureUrl={profilePictureUrl}
+          />
+        )}
       </div>
     </div>
   );

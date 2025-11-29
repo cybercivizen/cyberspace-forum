@@ -16,9 +16,11 @@ import { useRouter } from "next/navigation";
 export function UserDropdown({
   username,
   isAdmin,
+  profilePictureUrl,
 }: {
   username?: string;
   isAdmin?: boolean;
+  profilePictureUrl?: string;
 }) {
   const router = useRouter();
   return (
@@ -27,7 +29,7 @@ export function UserDropdown({
         <Avatar className="content-center mr-2">
           <AvatarImage
             className="bg-white"
-            src="/profile-pic.jpg"
+            src={profilePictureUrl}
             alt="@shadcn"
           />
           <AvatarFallback>Cy</AvatarFallback>

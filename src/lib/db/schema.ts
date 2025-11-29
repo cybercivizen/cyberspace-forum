@@ -3,15 +3,18 @@ import {
   date,
   integer,
   pgTable,
+  serial,
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  username: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).notNull().unique(),
-  password: varchar({ length: 255 }).notNull(),
+  id: serial("id").primaryKey(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
+  password: varchar("password", { length: 255 }).notNull(),
+  profile_picture_url: varchar("profile_picture_url", { length: 500 }), // Add this
+  created_at: timestamp("created_at").defaultNow().notNull(),
   dateOfBirth: date("date_of_birth", { mode: "date" }).notNull(),
   rolesId: integer("roles_id")
     .references(() => roles.id)
