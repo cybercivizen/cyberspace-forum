@@ -41,6 +41,8 @@ import { modifyUser } from "@/src/lib/repositories/user-repository";
 import { useUploadThing } from "@/src/lib/utils";
 import { Camera } from "lucide-react"; // or any icon library
 import { useRouter } from "next/navigation";
+import { Resend } from "resend";
+import { sendEmail } from "@/src/app/profile/actions";
 
 const FormSchema = z.object({
   username: z
@@ -204,7 +206,8 @@ export default function ProfileInfo({
     reset();
   }
 
-  const onChangeEmail = () => {
+  const onChangeEmail = async () => {
+    await sendEmail();
     toast.success("Confirmation email has been sent to your address.");
   };
 
