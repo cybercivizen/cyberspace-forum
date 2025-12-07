@@ -43,6 +43,7 @@ import { Camera } from "lucide-react"; // or any icon library
 import { useRouter } from "next/navigation";
 import { Resend } from "resend";
 import { sendEmail } from "@/src/app/profile/actions";
+import { is } from "drizzle-orm";
 
 const FormSchema = z.object({
   username: z
@@ -276,15 +277,20 @@ export default function ProfileInfo({
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
                           <FieldLabel>Username</FieldLabel>
-                          <Input
-                            {...field}
-                            type="text"
-                            placeholder={username}
-                            aria-invalid={fieldState.invalid}
-                          />
-                          {fieldState.invalid && (
-                            <FieldError errors={[fieldState.error]} />
+                          {isOwner && (
+                            <>
+                              <Input
+                                {...field}
+                                type="text"
+                                placeholder={username}
+                                aria-invalid={fieldState.invalid}
+                              />
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </>
                           )}
+                          {!isOwner && <div>{username}</div>}
                         </Field>
                       )}
                     />
@@ -292,13 +298,18 @@ export default function ProfileInfo({
                     <Field>
                       <FieldLabel>Email</FieldLabel>
                       <div className="relative">
-                        <Input type="text" placeholder={email} disabled />
-                        <div
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground cursor-pointer underline"
-                          onClick={onChangeEmail}
-                        >
-                          Change
-                        </div>
+                        {isOwner && (
+                          <>
+                            <Input type="text" placeholder={email} disabled />
+                            <div
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground cursor-pointer underline"
+                              onClick={onChangeEmail}
+                            >
+                              Change
+                            </div>
+                          </>
+                        )}
+                        {!isOwner && <div>{email}</div>}
                       </div>
                     </Field>
                   </div>
@@ -309,59 +320,74 @@ export default function ProfileInfo({
                       render={({ field, fieldState }) => (
                         <Field data-invalid={fieldState.invalid}>
                           <FieldLabel>Date of Birth</FieldLabel>
-                          <Popover
-                            open={openCalendar}
-                            onOpenChange={setOpenCalendar}
-                          >
-                            <PopoverTrigger asChild>
-                              <Input
-                                className="text-left cursor-pointer"
-                                id="date"
-                                aria-invalid={fieldState.invalid}
-                                value={
-                                  field.value
-                                    ? field.value.toLocaleDateString()
-                                    : ""
-                                }
-                                onChange={field.onChange}
-                                placeholder={dateOfBirth.toDateString()}
-                                readOnly
-                              />
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto overflow-hidden"
-                              align="start"
-                            >
-                              <Calendar
-                                {...field}
-                                mode="single"
-                                captionLayout="dropdown"
-                                selected={field.value}
-                                onSelect={(date) => {
-                                  field.onChange(date);
-                                  setOpenCalendar(false);
-                                }}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          {fieldState.invalid && (
-                            <FieldError errors={[fieldState.error]} />
+                          {isOwner && (
+                            <>
+                              <Popover
+                                open={openCalendar}
+                                onOpenChange={setOpenCalendar}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Input
+                                    className="text-left cursor-pointer"
+                                    id="date"
+                                    aria-invalid={fieldState.invalid}
+                                    value={
+                                      field.value
+                                        ? field.value.toLocaleDateString()
+                                        : ""
+                                    }
+                                    onChange={field.onChange}
+                                    placeholder={dateOfBirth.toDateString()}
+                                    readOnly
+                                  />
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="w-auto overflow-hidden"
+                                  align="start"
+                                >
+                                  <Calendar
+                                    {...field}
+                                    mode="single"
+                                    captionLayout="dropdown"
+                                    selected={field.value}
+                                    onSelect={(date) => {
+                                      field.onChange(date);
+                                      setOpenCalendar(false);
+                                    }}
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                              {fieldState.invalid && (
+                                <FieldError errors={[fieldState.error]} />
+                              )}
+                            </>
+                          )}
+                          {!isOwner && (
+                            <div>{dateOfBirth.toLocaleDateString()}</div>
                           )}
                         </Field>
                       )}
                     />
-                    <div className="flex gap-4 w-full justify-end">
-                      <Button variant="outline" type="button" onClick={onReset}>
-                        Reset
-                      </Button>
-                      <Button
-                        type="submit"
-                        form="edit-profile-form"
-                        disabled={!isDirty || !isValid}
-                      >
-                        Save changes
-                      </Button>
-                    </div>
+                    {isOwner && (
+                      <>
+                        <div className="flex gap-4 w-full justify-end">
+                          <Button
+                            variant="outline"
+                            type="button"
+                            onClick={onReset}
+                          >
+                            Reset
+                          </Button>
+                          <Button
+                            type="submit"
+                            form="edit-profile-form"
+                            disabled={!isDirty || !isValid}
+                          >
+                            Save changes
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </FieldSet>
 

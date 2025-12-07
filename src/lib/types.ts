@@ -19,4 +19,9 @@ export type Message = {
   content: string;
   createdAt?: Date;
   userId?: number;
+  user?: {
+    id: number;
+    username: string;
+    profilePictureUrl: string | null;
+  };
 };
