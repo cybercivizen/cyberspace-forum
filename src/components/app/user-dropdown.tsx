@@ -44,7 +44,9 @@ export function UserDropdown({
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => router.push("/profile")}>
+              <DropdownMenuItem
+                onClick={() => router.push(`/profile/${username}`)}
+              >
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>

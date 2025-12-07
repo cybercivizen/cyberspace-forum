@@ -34,7 +34,7 @@ import Image from "next/image";
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { iso, z } from "zod";
 import { SessionData, UserProfile } from "@/src/lib/types";
 import { toast } from "sonner";
 import { modifyUser } from "@/src/lib/repositories/user-repository";
@@ -58,8 +58,10 @@ export type FormInput = z.infer<typeof FormSchema>;
 
 export default function ProfileInfo({
   userProfile,
+  isOwner,
 }: {
   userProfile: UserProfile;
+  isOwner: boolean;
 }) {
   const router = useRouter();
   const popoverId = useId(); // Generate stable ID
@@ -230,20 +232,24 @@ export default function ProfileInfo({
                   width={70}
                   height={70}
                 />
-                <label
-                  htmlFor="profile-upload"
-                  className="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 cursor-pointer hover:bg-primary/90 transition-colors"
-                >
-                  <Camera className="w-4 h-4 text-black" />
-                </label>
-                <input
-                  id="profile-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  disabled={isUploading}
-                />
+                {isOwner && (
+                  <>
+                    <label
+                      htmlFor="profile-upload"
+                      className="absolute bottom-0 right-0 bg-primary rounded-full p-1.5 cursor-pointer hover:bg-primary/90 transition-colors"
+                    >
+                      <Camera className="w-4 h-4 text-black" />
+                    </label>
+                    <input
+                      id="profile-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileChange}
+                      disabled={isUploading}
+                    />
+                  </>
+                )}
               </div>
               <div className="flex flex-col">
                 <div className="text-2xl text-white font-mono">{username}</div>

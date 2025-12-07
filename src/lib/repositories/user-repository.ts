@@ -31,21 +31,40 @@ export async function getUserBy(
   return (await db.select().from(users).where(whereClause).limit(1))[0];
 }
 
-export async function getUserProfile(id: number) {
-  return (
-    await db
-      .select({
-        id: users.id,
-        username: users.username,
-        email: users.email,
-        dateOfBirth: users.dateOfBirth,
-        rolesId: users.rolesId,
-        profilePictureUrl: users.profile_picture_url,
-      })
-      .from(users)
-      .where(eq(users.id, id))
-      .limit(1)
-  )[0];
+export async function getUserProfile(id?: number, username?: string) {
+  if (username) {
+    return (
+      await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          dateOfBirth: users.dateOfBirth,
+          rolesId: users.rolesId,
+          profilePictureUrl: users.profile_picture_url,
+        })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1)
+    )[0];
+  }
+
+  if (id) {
+    return (
+      await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          dateOfBirth: users.dateOfBirth,
+          rolesId: users.rolesId,
+          profilePictureUrl: users.profile_picture_url,
+        })
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1)
+    )[0];
+  }
 }
 
 export async function createUser(data: {

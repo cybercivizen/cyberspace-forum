@@ -1,5 +1,8 @@
 "use server";
+import { getSession } from "@/src/lib/auth/session";
+import { SessionData, UserProfile } from "@/src/lib/types";
 import { Resend } from "resend";
+import { getUserProfile as fetchUserProfile } from "@/src/lib/repositories/user-repository";
 
 export async function sendEmail() {
   console.log("Sending email...");
@@ -20,5 +23,22 @@ export async function sendEmail() {
   } catch (error) {
     console.error("Error initializing Resend:", error);
     throw error;
+  }
+}
+
+export async function getUserProfile(
+  username: string
+): Promise<{ userProfile: UserProfile; isOwner: boolean }> {
+  const userProfile = (await fetchUserProfile(
+    undefined,
+    username
+  )) as UserProfile;
+
+  const session = (await getSession()) as SessionData;
+
+  if (session.username === username) {
+    return { userProfile, isOwner: true };
+  } else {
+    return { userProfile, isOwner: false };
   }
 }
