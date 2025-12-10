@@ -68,7 +68,7 @@ export default function ProfileInfo({
   const popoverId = useId(); // Generate stable ID
   const [openCalendar, setOpenCalendar] = React.useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState(
-    userProfile.profilePictureUrl || "/avatar.png"
+    userProfile?.profilePictureUrl || "/default-avatar.png"
   );
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [imgSrc, setImgSrc] = useState("");
@@ -225,7 +225,7 @@ export default function ProfileInfo({
             <div className="flex gap-6">
               <div className="relative">
                 <Image
-                  src={userProfile.profilePictureUrl || "/default-avatar.png"}
+                  src={profilePicUrl}
                   className={`rounded-full ${
                     isUploading ? "opacity-50" : "opacity-100"
                   }`}
