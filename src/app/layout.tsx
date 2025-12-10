@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TERMINAL CHAT",
-  description: "A terminal themed chat application.",
+  title: "CYBERSPACE",
+  description: "A F4A chatting application.",
 };
 
 export default async function RootLayout({

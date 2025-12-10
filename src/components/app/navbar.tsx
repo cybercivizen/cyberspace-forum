@@ -20,7 +20,7 @@ export default function NavBar({
           className="text-xl font-mono tracking-widest cursor-pointer"
           onClick={() => router.push("/")}
         >
-          THE ULTIMATE TERMINAL
+          CYBERSPACE.FORUM
         </span>
         {username && (
           <UserDropdown

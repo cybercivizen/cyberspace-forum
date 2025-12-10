@@ -73,7 +73,16 @@ export default function ChatBox({
     });
     setMessages([
       ...messages,
-      { content: message.content, id: newMessage.id, createdAt: new Date() },
+      {
+        content: message.content,
+        id: newMessage.id,
+        createdAt: new Date(),
+        user: {
+          id: userProfile.id,
+          username: userProfile.username,
+          profilePictureUrl: userProfile.profilePictureUrl,
+        },
+      },
     ]);
     setMessage({ content: "", id: newMessage.id });
   };
@@ -233,7 +242,9 @@ export default function ChatBox({
                 ></Image>
                 <div className="flex-col w-full">
                   <div className="pb-2 flex items-center gap-2">
-                    <div className="font-mono opacity-55">{username}</div>
+                    <div className="font-mono opacity-55">
+                      {msg.user?.username}
+                    </div>
                     {isMsgHovered === msg.id && (
                       <span className="text-[0.7rem] opacity-40 w-fit">
                         {msg.createdAt && formatMessageTime(msg.createdAt)}
@@ -248,16 +259,17 @@ export default function ChatBox({
                     <Card className="w-fit p-3 py-2 bg-accent z-0">
                       {msg.content}
                     </Card>
-                    {isMsgHovered === msg.id && (
-                      <>
-                        <ChevronDownIcon
-                          className={`w-5 h-5 self-center ml-3 cursor-pointer ${
-                            showOptions === msg.id ? "-rotate-90" : ""
-                          }`}
-                          onClick={() => handleMsgOptions(msg.id)}
-                        />
-                      </>
-                    )}
+                    {isMsgHovered === msg.id &&
+                      msg.user?.username === userProfile.username && (
+                        <>
+                          <ChevronDownIcon
+                            className={`w-5 h-5 self-center ml-3 cursor-pointer ${
+                              showOptions === msg.id ? "-rotate-90" : ""
+                            }`}
+                            onClick={() => handleMsgOptions(msg.id)}
+                          />
+                        </>
+                      )}
                     {showOptions === msg.id && (
                       <div className="flex">
                         <Tooltip>
