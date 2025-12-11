@@ -89,7 +89,6 @@ export default function SignupPage() {
 
   async function onSubmit(data: FormInput) {
     const result = await signup(data);
-    console.log("Registration result:", result);
     if (!result.success && result.errors) {
       if (result.errors.email) {
         setError("email", {

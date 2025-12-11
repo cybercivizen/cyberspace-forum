@@ -8,6 +8,7 @@ export default async function ProfilePage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
+  console.log("ProfilePage username:", username);
   const { userProfile, isOwner } = (await getUserProfile(username)) as {
     userProfile: UserProfile;
     isOwner: boolean;

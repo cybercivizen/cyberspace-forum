@@ -88,7 +88,6 @@ export default function ChatBox({
   };
 
   const handleMsgOptions = (index: number) => {
-    console.log("Options for message index:", index);
     if (showOptions === index) {
       setShowOptions(null);
       return;
@@ -102,14 +101,12 @@ export default function ChatBox({
   };
 
   const handleMsgDelete = (index?: number) => {
-    console.log("Delete message index:", index);
     setOpenDeleteDialog(true);
     setDeletingIndex(index ?? null);
     setShowOptions(null);
   };
 
   const handleDeleteSave = async (index?: number) => {
-    console.log("Delete message index:", index);
     const updatedMessages = messages.filter((m) => m.id !== index);
     setMessages(updatedMessages);
     await deleteMessage(index ?? 0);
@@ -117,14 +114,12 @@ export default function ChatBox({
   };
 
   const handleMsgEdit = (index: number) => {
-    console.log("Edit message");
     setOpenEditDialog(true);
     setEditingIndex(index);
     setEditedMessage(messages.filter((m) => m.id === index)[0]);
   };
 
   const handleEditSave = async () => {
-    console.log("Save edited message:", editedMessage);
     const updatedMessages = messages.map((msg) =>
       msg.id === editingIndex ? editedMessage : msg
     );
@@ -229,7 +224,6 @@ export default function ChatBox({
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {/* MESSAGES */}
           {messages.map((msg) => {
-            console.log(msg);
             return (
               <div key={msg.id} className="flex gap-5 items-end">
                 <Image

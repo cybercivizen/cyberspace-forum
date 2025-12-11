@@ -34,11 +34,25 @@ export async function getUserProfile(
     username
   )) as UserProfile;
 
-  const session = (await getSession()) as SessionData;
+  try {
+    if (!userProfile) {
+      throw new Error("User profile not found");
+    }
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    throw error;
+  }
 
-  if (session.username === username) {
-    return { userProfile, isOwner: true };
-  } else {
-    return { userProfile, isOwner: false };
+  try {
+    const session = (await getSession()) as SessionData;
+
+    if (session.username === username) {
+      return { userProfile, isOwner: true };
+    } else {
+      return { userProfile, isOwner: false };
+    }
+  } catch (error) {
+    console.error("Error fetching session data:", error);
+    throw error;
   }
 }

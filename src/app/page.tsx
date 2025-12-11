@@ -6,7 +6,11 @@ import { getAllMessages } from "../lib/repositories/msg-repository";
 
 export default async function Home() {
   const session = (await getSession()) as SessionData;
+  console.log("Session:", session); // Add this for debugging
+
   const userProfile = (await getUserProfile(session.userId)) as UserProfile;
+  console.log("UserProfile:", userProfile); // Add this for debugging
+
   const initialMessages = (await getAllMessages()) as Message[];
 
   return (

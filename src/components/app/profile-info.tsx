@@ -81,7 +81,11 @@ export default function ProfileInfo({
   });
   const [imgRef, setImgRef] = useState<HTMLImageElement | null>(null);
 
-  const { username, email, dateOfBirth } = userProfile;
+  const { username, email, dateOfBirth } = userProfile || {
+    username: "",
+    email: "",
+    dateOfBirth: new Date(),
+  };
 
   const defaultFormValues: FormInput = {
     username: username,
@@ -184,7 +188,6 @@ export default function ProfileInfo({
   };
 
   async function onSaveChanges(data: FormInput) {
-    console.log("Saved data:", data);
     const result = await modifyUser(data, userProfile);
     if (!result.success && result.errors) {
       if (result.errors.username) {

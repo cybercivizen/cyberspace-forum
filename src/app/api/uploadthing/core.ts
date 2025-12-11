@@ -36,9 +36,6 @@ export const uploadRouter = {
       return { userId: user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      console.log("Upload complete for userId:", metadata.userId);
-      console.log("File URL:", file.ufsUrl);
-
       await db
         .update(users)
         .set({ profile_picture_url: file.ufsUrl })
