@@ -1,7 +1,7 @@
 "use server";
 import db from "../db/db";
 import { users } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { getRoleId } from "../constants";
 import { FormInput } from "@/src/components/app/profile-info";
@@ -31,7 +31,7 @@ export async function getUserBy(
   return (await db.select().from(users).where(whereClause).limit(1))[0];
 }
 
-export async function getUserProfile(id?: number, username?: string) {
+export async function getUserProfile(username: string) {
   if (username) {
     return (
       await db
@@ -44,27 +44,27 @@ export async function getUserProfile(id?: number, username?: string) {
           profilePictureUrl: users.profile_picture_url,
         })
         .from(users)
-        .where(eq(users.username, username))
+        .where(ilike(users.username, username)) // Changed to ilike for case-insensitive match
         .limit(1)
     )[0];
   }
 
-  if (id) {
-    return (
-      await db
-        .select({
-          id: users.id,
-          username: users.username,
-          email: users.email,
-          dateOfBirth: users.dateOfBirth,
-          rolesId: users.rolesId,
-          profilePictureUrl: users.profile_picture_url,
-        })
-        .from(users)
-        .where(eq(users.id, id))
-        .limit(1)
-    )[0];
-  }
+  // if (id) {
+  //   return (
+  //     await db
+  //       .select({
+  //         id: users.id,
+  //         username: users.username,
+  //         email: users.email,
+  //         dateOfBirth: users.dateOfBirth,
+  //         rolesId: users.rolesId,
+  //         profilePictureUrl: users.profile_picture_url,
+  //       })
+  //       .from(users)
+  //       .where(eq(users.id, id))
+  //       .limit(1)
+  //   )[0];
+  // }
 }
 
 export async function createUser(data: {
