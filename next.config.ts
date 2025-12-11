@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone", // ← makes .next tiny
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

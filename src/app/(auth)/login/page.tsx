@@ -66,7 +66,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-1/4 m-auto z-10">
+    <Card className="justify-center w-[80vw] md:w-[30vw] h-fit m-auto z-10">
       <CardHeader>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
