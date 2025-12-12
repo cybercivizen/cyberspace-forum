@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ws": "npx tsx src/ws/socket.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -47,6 +48,8 @@
     "react-hook-form": "^7.66.0",
     "react-image-crop": "^11.0.10",
     "resend": "^6.5.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "uploadthing": "^7.7.4",

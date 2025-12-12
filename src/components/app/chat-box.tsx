@@ -25,6 +25,7 @@ import {
   updateMessage,
 } from "@/src/lib/repositories/msg-repository";
 import { useRouter } from "next/navigation";
+import { io, Socket } from "socket.io-client";
 
 export default function ChatBox({
   userProfile,
@@ -45,7 +46,7 @@ export default function ChatBox({
     initialMessages.map((msg) => ({
       content: msg.content,
       id: msg.id,
-      createdAt: msg.createdAt,
+      createdAt: new Date(msg.createdAt!),
       user: msg.user,
     }))
   );
@@ -65,25 +66,46 @@ export default function ChatBox({
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const router = useRouter();
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    const newSocket = io("http://localhost:3002", { withCredentials: true });
+    console.log("Connecting to WebSocket server...");
+    console.log(newSocket);
+    socketRef.current = newSocket;
+
+    newSocket.on("newMessage", (msg: Message) => {
+      setMessages((prev) => [...prev, { ...msg, createdAt: msg.createdAt }]);
+    });
+
+    newSocket.on("connect", () => {
+      console.log("Connected to WS server");
+    });
+
+    newSocket.on("connect_error", (err) => {
+      console.log("WS connect error:", err);
+    });
+
+    return () => {
+      newSocket.close();
+    };
+  }, []);
   const handleSend = async () => {
     if (message.content.trim() === "") return;
     const newMessage = await createMessage({
       userId: userProfile.id,
       content: message.content,
     });
-    setMessages([
-      ...messages,
-      {
-        content: message.content,
-        id: newMessage.id,
-        createdAt: new Date(),
-        user: {
-          id: userProfile.id,
-          username: userProfile.username,
-          profilePictureUrl: userProfile.profilePictureUrl,
-        },
+    socketRef.current?.emit("sendMessage", {
+      content: message.content,
+      id: newMessage.id,
+      createdAt: new Date(),
+      user: {
+        id: userProfile.id,
+        username: userProfile.username,
+        profilePictureUrl: userProfile.profilePictureUrl,
       },
-    ]);
+    });
     setMessage({ content: "", id: newMessage.id });
   };
 
@@ -132,9 +154,9 @@ export default function ChatBox({
   const isToday = (date: Date) => {
     const today = new Date();
     return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
+      date?.getDate() === today.getDate() &&
+      date?.getMonth() === today.getMonth() &&
+      date?.getFullYear() === today.getFullYear()
     );
   };
 
@@ -224,6 +246,7 @@ export default function ChatBox({
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {/* MESSAGES */}
           {messages.map((msg) => {
+            console.log("Rendering message:", msg.id);
             return (
               <div key={msg.id} className="flex gap-5 items-end">
                 <Image
