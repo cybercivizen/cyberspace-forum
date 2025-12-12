@@ -72,7 +72,7 @@ export default async function RootLayout({
             </main>
             <footer className="p-2 border-t bg-background/80">
               <div className="container mx-auto text-center text-sm text-muted-foreground">
-                © 2025 Terminal Chat. All rights reserved.
+                © 2025 Cyberspace. All rights reserved.
               </div>
             </footer>
           </div>

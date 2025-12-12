@@ -1,4 +1,4 @@
-# Terminal Chat - AI Coding Guidelines
+# Cyberspace.FORUM - AI Coding Guidelines
 
 ## Project Overview
 
