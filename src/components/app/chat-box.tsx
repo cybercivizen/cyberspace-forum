@@ -71,19 +71,16 @@ export default function ChatBox({
   useEffect(() => {
     const newSocket = io("http://localhost:3002", { withCredentials: true });
     console.log("Connecting to WebSocket server...");
-    console.log(newSocket);
     socketRef.current = newSocket;
 
     newSocket.on("newMessage", (msg: Message) => {
-      setMessages((prev) => [...prev, { ...msg, createdAt: msg.createdAt }]);
-    });
-
-    newSocket.on("connect", () => {
-      console.log("Connected to WS server");
-    });
-
-    newSocket.on("connect_error", (err) => {
-      console.log("WS connect error:", err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...msg,
+          createdAt: new Date(msg.createdAt || Date.now()),
+        },
+      ]);
     });
 
     return () => {

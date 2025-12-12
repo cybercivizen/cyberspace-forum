@@ -1,20 +1,8 @@
+import "dotenv/config";
+
 import { Server } from "socket.io";
 import { createServer } from "http";
-import { jwtVerify } from "jose";
-
-const secretKey = "32e7ab757c041a7adb77c60c0d98a423";
-const encodedKey = new TextEncoder().encode(secretKey);
-
-async function decrypt(session: string | undefined = "") {
-  try {
-    const { payload } = await jwtVerify(session, encodedKey, {
-      algorithms: ["HS256"],
-    });
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { decrypt } from "../lib/auth/session";
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
@@ -23,7 +11,6 @@ const io = new Server(httpServer, {
 
 io.use(async (socket, next) => {
   const cookie = socket.handshake.headers.cookie;
-  console.log("Socket cookies:", cookie);
   if (!cookie) {
     return next(new Error("Authentication error"));
   }
@@ -39,12 +26,11 @@ io.use(async (socket, next) => {
     return next(new Error("Authentication error"));
   }
   socket.data.user = payload;
+  console.log("Authenticated user:", socket.data.user);
   next();
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.data.user.username);
-
   socket.on("sendMessage", (data) => {
     // Broadcast to all connected clients
     io.emit("newMessage", data);
