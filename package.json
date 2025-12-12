@@ -1,6 +1,6 @@
 {
-  "name": "next-demo",
-  "version": "0.1.0",
+  "name": "cyberspace",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "db:erd": "drizzle-erd --in ./src/lib/db/schema.ts --out ./erd.svg",
