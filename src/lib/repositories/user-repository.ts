@@ -6,7 +6,6 @@ import bcrypt from "bcrypt";
 import { getRoleId } from "../constants";
 import { FormInput } from "@/src/components/app/profile-info";
 import { UserProfile } from "../types";
-import { profile } from "console";
 
 export async function getUserBy(
   field: "id" | "email" | "username",
@@ -19,10 +18,10 @@ export async function getUserBy(
       whereClause = eq(users.id, value as number);
       break;
     case "email":
-      whereClause = eq(users.email, value as string);
+      whereClause = ilike(users.email, value as string);
       break;
     case "username":
-      whereClause = eq(users.username, value as string);
+      whereClause = ilike(users.username, value as string);
       break;
     default:
       throw new Error("Invalid field");

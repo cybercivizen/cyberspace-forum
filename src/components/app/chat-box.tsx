@@ -69,7 +69,10 @@ export default function ChatBox({
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3002", { withCredentials: true });
+    const newSocket = io("http://localhost:4000", {
+      withCredentials: true,
+      forceNew: true,
+    });
     console.log("Connecting to WebSocket server...");
     socketRef.current = newSocket;
 
@@ -81,6 +84,10 @@ export default function ChatBox({
           createdAt: new Date(msg.createdAt || Date.now()),
         },
       ]);
+    });
+
+    newSocket.on("connect_error", (error) => {
+      console.error("WebSocket connection error:", error);
     });
 
     return () => {
@@ -243,7 +250,6 @@ export default function ChatBox({
         <div className="flex flex-col gap-4 pr-4 pl-4 max-h-[80%] overflow-y-auto custom-scrollbar">
           {/* MESSAGES */}
           {messages.map((msg) => {
-            console.log("Rendering message:", msg.id);
             return (
               <div key={msg.id} className="flex gap-5 items-end">
                 <Image

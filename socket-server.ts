@@ -1,12 +1,25 @@
-import "dotenv/config";
-
 import { Server } from "socket.io";
 import { createServer } from "http";
-import { decrypt } from "../lib/auth/session";
+import { jwtVerify } from "jose";
+
+const secretKey = "fc98fada3bda36dfe7d28e93afb3bff8";
+const encodedKey = new TextEncoder().encode(secretKey);
+
+export async function decrypt(session: string | undefined = "") {
+  try {
+    const { payload } = await jwtVerify(session, encodedKey, {
+      algorithms: ["HS256"],
+    });
+    return payload;
+  } catch (error) {}
+}
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-  cors: { origin: "http://localhost:3000", credentials: true },
+  cors: {
+    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    credentials: true,
+  },
 });
 
 io.use(async (socket, next) => {
@@ -41,7 +54,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.WS_PORT || 3002;
+const PORT = process.env.WS_PORT || 4000;
 httpServer.listen(PORT, () => {
   console.log(`WebSocket server running on port ${PORT}`);
 });
