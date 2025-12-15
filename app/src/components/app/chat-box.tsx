@@ -25,7 +25,6 @@ import {
   updateMessage,
 } from "@/src/lib/repositories/msg-repository";
 import { useRouter } from "next/navigation";
-import { io, Socket } from "socket.io-client";
 
 export default function ChatBox({
   userProfile,
@@ -66,17 +65,20 @@ export default function ChatBox({
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const router = useRouter();
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<WebSocket | null>(null); // Changed from Socket to WebSocket
 
   useEffect(() => {
-    const newSocket = io("http://localhost:4000", {
-      withCredentials: true,
-      forceNew: true,
-    });
+    const newSocket = new WebSocket("ws://localhost:8080/chat"); // Changed to WebSocket
     console.log("Connecting to WebSocket server...");
     socketRef.current = newSocket;
 
-    newSocket.on("newMessage", (msg: Message) => {
+    newSocket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    newSocket.onmessage = (event) => {
+      const msg: Message = JSON.parse(event.data);
+      console.log("Received message:", msg);
       setMessages((prev) => [
         ...prev,
         {
@@ -84,32 +86,42 @@ export default function ChatBox({
           createdAt: new Date(msg.createdAt || Date.now()),
         },
       ]);
-    });
+    };
 
-    newSocket.on("connect_error", (error) => {
-      console.error("WebSocket connection error:", error);
-    });
+    newSocket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    newSocket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
 
     return () => {
       newSocket.close();
     };
   }, []);
+
   const handleSend = async () => {
     if (message.content.trim() === "") return;
     const newMessage = await createMessage({
       userId: userProfile.id,
       content: message.content,
     });
-    socketRef.current?.emit("sendMessage", {
-      content: message.content,
-      id: newMessage.id,
-      createdAt: new Date(),
-      user: {
-        id: userProfile.id,
-        username: userProfile.username,
-        profilePictureUrl: userProfile.profilePictureUrl,
-      },
-    });
+
+    // Changed from socketRef.current?.emit to send
+    socketRef.current?.send(
+      JSON.stringify({
+        content: message.content,
+        id: newMessage.id,
+        createdAt: new Date(),
+        user: {
+          id: userProfile.id,
+          username: userProfile.username,
+          profilePictureUrl: userProfile.profilePictureUrl,
+        },
+      })
+    );
+
     setMessage({ content: "", id: newMessage.id });
   };
 

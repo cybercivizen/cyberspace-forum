@@ -2,14 +2,12 @@
   "name": "cyberspace",
   "version": "0.3.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "db:erd": "drizzle-erd --in ./src/lib/db/schema.ts --out ./erd.svg",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "ws": "npx tsx socket-server.ts"
+    "lint": "eslint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
