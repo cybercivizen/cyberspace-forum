@@ -44,7 +44,7 @@ export async function getUserProfile(
   try {
     const session = (await getSession()) as SessionData;
 
-    if (session.username === username) {
+    if (session.username.toLowerCase() === username.toLowerCase()) {
       return { userProfile, isOwner: true };
     } else {
       return { userProfile, isOwner: false };
