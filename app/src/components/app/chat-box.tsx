@@ -68,7 +68,8 @@ export default function ChatBox({
   const socketRef = useRef<WebSocket | null>(null); // Changed from Socket to WebSocket
 
   useEffect(() => {
-    const newSocket = new WebSocket("ws://localhost:8080/chat"); // Changed to WebSocket
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/chat";
+    const newSocket = new WebSocket(wsUrl); // Changed to WebSocket
     console.log("Connecting to WebSocket server...");
     socketRef.current = newSocket;
 
