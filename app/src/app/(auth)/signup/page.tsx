@@ -38,7 +38,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { useRouter } from "next/navigation";
 import { signup } from "@/src/lib/auth/auth";
 
@@ -119,217 +119,226 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="justify-center w-[80vw] md:w-[30vw] h-fit m-auto z-10">
-      <CardHeader>
-        <CardTitle className="text-2xl">Signup</CardTitle>
-        <CardDescription>
-          Create a new <span className="font-mono">TERMINAL</span> account.
-          Already have an account?{" "}
-          <a href="/login" className="text-primary font-mono">
-            Login
-          </a>
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
-          <FieldGroup>
-            <FieldSet>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="username"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Username</FieldLabel>
-                      <Input
-                        {...field}
-                        type="text"
-                        placeholder="Enter your username"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Email</FieldLabel>
-                      <Input
-                        {...field}
-                        type="text"
-                        placeholder="Enter your email"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Password</FieldLabel>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Enter your password"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Confirm Password</FieldLabel>
-                      <Input
-                        {...field}
-                        type="password"
-                        placeholder="Confirm password"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Controller
-                  name="dateOfBirth"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Date of Birth</FieldLabel>
-                      <Popover
-                        open={openCalendar}
-                        onOpenChange={setOpenCalendar}
-                      >
-                        <PopoverTrigger asChild>
-                          <div>
-                            <Input
-                              className="text-left"
-                              id="date"
-                              aria-invalid={fieldState.invalid}
-                              value={
-                                field.value
-                                  ? field.value.toLocaleDateString()
-                                  : ""
-                              }
-                              onChange={field.onChange}
-                              placeholder="MM/DD/YYYY"
-                              readOnly
-                            />
-                          </div>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto overflow-hidden"
-                          align="start"
-                        >
-                          <Calendar
-                            {...field}
-                            mode="single"
-                            captionLayout="dropdown"
-                            selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setOpenCalendar(false);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  name="role"
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>Account Type</FieldLabel>
-                      <Select
-                        name={field.name}
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger aria-invalid={fieldState.invalid}>
-                          <SelectValue placeholder="Select a type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            <SelectLabel>Types</SelectLabel>
-                            {roles.map((type) => (
-                              <SelectItem key={type} value={type.toLowerCase()}>
-                                {type}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </div>
-            </FieldSet>
-            <FieldSeparator />
-            <FieldSet>
-              <Controller
-                name="termsAccepted"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field
-                    orientation="horizontal"
-                    className="items-center"
-                    data-invalid={fieldState.invalid}
-                  >
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      name={field.name}
-                    />
-                    <FieldLabel>I agree to the Terms and Conditions</FieldLabel>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
+    <>
+      <Toaster />
+
+      <Card className="justify-center w-[80vw] md:w-[30vw] h-fit m-auto z-10">
+        <CardHeader>
+          <CardTitle className="text-2xl">Signup</CardTitle>
+          <CardDescription>
+            Create a new <span className="font-mono">TERMINAL</span> account.
+            Already have an account?{" "}
+            <a href="/login" className="text-primary font-mono">
+              Login
+            </a>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form id="signup-form" onSubmit={handleSubmit(onSubmit)}>
+            <FieldGroup>
+              <FieldSet>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="username"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Username</FieldLabel>
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder="Enter your username"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
                     )}
-                  </Field>
-                )}
-              />
-            </FieldSet>
-          </FieldGroup>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Field orientation="horizontal" className="justify-end gap-4">
-          <Button variant="outline" onClick={onReset}>
-            Reset
-          </Button>
-          <Button type="submit" form="signup-form">
-            Signup
-          </Button>
-        </Field>
-      </CardFooter>
-    </Card>
+                  />
+                  <Controller
+                    name="email"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Email</FieldLabel>
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder="Enter your email"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="password"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Password</FieldLabel>
+                        <Input
+                          {...field}
+                          type="password"
+                          placeholder="Enter your password"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name="confirmPassword"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Confirm Password</FieldLabel>
+                        <Input
+                          {...field}
+                          type="password"
+                          placeholder="Confirm password"
+                          aria-invalid={fieldState.invalid}
+                        />
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Controller
+                    name="dateOfBirth"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Date of Birth</FieldLabel>
+                        <Popover
+                          open={openCalendar}
+                          onOpenChange={setOpenCalendar}
+                        >
+                          <PopoverTrigger asChild>
+                            <div>
+                              <Input
+                                className="text-left"
+                                id="date"
+                                aria-invalid={fieldState.invalid}
+                                value={
+                                  field.value
+                                    ? field.value.toLocaleDateString()
+                                    : ""
+                                }
+                                onChange={field.onChange}
+                                placeholder="MM/DD/YYYY"
+                                readOnly
+                              />
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="w-auto overflow-hidden"
+                            align="start"
+                          >
+                            <Calendar
+                              {...field}
+                              mode="single"
+                              captionLayout="dropdown"
+                              selected={field.value}
+                              onSelect={(date) => {
+                                field.onChange(date);
+                                setOpenCalendar(false);
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name="role"
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel>Account Type</FieldLabel>
+                        <Select
+                          name={field.name}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger aria-invalid={fieldState.invalid}>
+                            <SelectValue placeholder="Select a type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Types</SelectLabel>
+                              {roles.map((type) => (
+                                <SelectItem
+                                  key={type}
+                                  value={type.toLowerCase()}
+                                >
+                                  {type}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+              </FieldSet>
+              <FieldSeparator />
+              <FieldSet>
+                <Controller
+                  name="termsAccepted"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field
+                      orientation="horizontal"
+                      className="items-center"
+                      data-invalid={fieldState.invalid}
+                    >
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        name={field.name}
+                      />
+                      <FieldLabel>
+                        I agree to the Terms and Conditions
+                      </FieldLabel>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+              </FieldSet>
+            </FieldGroup>
+          </form>
+        </CardContent>
+        <CardFooter>
+          <Field orientation="horizontal" className="justify-end gap-4">
+            <Button variant="outline" onClick={onReset}>
+              Reset
+            </Button>
+            <Button type="submit" form="signup-form">
+              Signup
+            </Button>
+          </Field>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

@@ -25,3 +25,19 @@ export type Message = {
     profilePictureUrl: string | null;
   };
 };
+
+export type WebsocketMessage = {
+  type: WsMessageType;
+  user: {
+    id: number;
+    username: string;
+    profilePictureUrl: string | null;
+  };
+  message?: Message;
+};
+
+export enum WsMessageType {
+  JOIN = "JOIN",
+  CHAT = "CHAT",
+  LEAVE = "LEAVE",
+}

@@ -36,7 +36,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { iso, z } from "zod";
 import { SessionData, UserProfile } from "@/src/lib/types";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { modifyUser } from "@/src/lib/repositories/user-repository";
 import { useUploadThing } from "@/src/lib/utils";
 import { Camera } from "lucide-react"; // or any icon library
@@ -204,6 +204,9 @@ export default function ProfileInfo({
         isAdmin: userProfile.rolesId === 2,
       };
       await createSession(newSessionData);
+      router.push(`/profile/${data.username}`);
+
+      //Push to url the new username
       toast.success("Changes has been saved succesfully!");
     }
   }
@@ -219,6 +222,7 @@ export default function ProfileInfo({
 
   return (
     <>
+      <Toaster />
       <div className="flex flex-col lg:flex-row justify-center items-center h-full w-[80%] gap-20">
         <Card className="flex-1  m-auto z-10 h-[80%] bg-black/50 w-full">
           <CardHeader>

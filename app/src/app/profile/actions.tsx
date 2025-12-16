@@ -29,7 +29,7 @@ export async function sendEmail() {
 export async function getUserProfile(
   username: string
 ): Promise<{ userProfile: UserProfile; isOwner: boolean }> {
-  console.error("Username: ", username); // Changed to console.error for visibility
+  console.log("Fetching user profile for:", username);
   const userProfile = (await fetchUserProfile(username)) as UserProfile;
 
   try {

@@ -68,7 +68,6 @@ export default async function RootLayout({
             />
             <main className="flex relative h-screen items-center justify-center flex-col">
               {children}
-              <Toaster />
             </main>
             <footer className="p-2 border-t bg-background/80">
               <div className="container mx-auto text-center text-sm text-muted-foreground">

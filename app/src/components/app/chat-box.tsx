@@ -18,13 +18,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { Message, UserProfile } from "@/src/lib/types";
+import {
+  Message,
+  UserProfile,
+  WebsocketMessage,
+  WsMessageType,
+} from "@/src/lib/types";
 import {
   createMessage,
   deleteMessage,
   updateMessage,
 } from "@/src/lib/repositories/msg-repository";
 import { useRouter } from "next/navigation";
+import { toast, Toaster } from "sonner";
 
 export default function ChatBox({
   userProfile,
@@ -65,40 +71,75 @@ export default function ChatBox({
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const router = useRouter();
-  const socketRef = useRef<WebSocket | null>(null); // Changed from Socket to WebSocket
+  const socketRef = useRef<WebSocket | null>(null);
 
-  useEffect(() => {
+  const connectWebSocket = () => {
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/chat";
-    const newSocket = new WebSocket(wsUrl); // Changed to WebSocket
-    console.log("Connecting to WebSocket server...");
+    const newSocket = new WebSocket(wsUrl);
     socketRef.current = newSocket;
 
     newSocket.onopen = () => {
       console.log("WebSocket connected");
+      socketRef.current?.send(
+        JSON.stringify({
+          type: "JOIN",
+          user: {
+            id: userProfile.id,
+            username: userProfile.username,
+            profilePictureUrl: userProfile.profilePictureUrl,
+          },
+        })
+      );
     };
 
     newSocket.onmessage = (event) => {
-      const msg: Message = JSON.parse(event.data);
-      console.log("Received message:", msg);
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...msg,
-          createdAt: new Date(msg.createdAt || Date.now()),
-        },
-      ]);
+      const wsMessage: WebsocketMessage = JSON.parse(event.data);
+      console.log("Received message:", wsMessage);
+
+      switch (wsMessage.type) {
+        case WsMessageType.JOIN:
+          {
+            toast(`${wsMessage.user.username} joined the chat!`);
+          }
+          break;
+        case WsMessageType.CHAT:
+          {
+            if (wsMessage.message) {
+              const msg = wsMessage.message;
+              console.log("Appending chat message:", msg);
+              setMessages((prev) => [
+                ...prev,
+                {
+                  ...msg,
+                  user: wsMessage.user,
+                  createdAt: new Date(msg.createdAt || Date.now()),
+                },
+              ]);
+            }
+          }
+          break;
+        case WsMessageType.LEAVE:
+          {
+            toast(`${wsMessage.user.username} left the chat!`);
+          }
+          break;
+      }
     };
 
     newSocket.onerror = (error) => {
       console.error("WebSocket error:", error);
+      toast.error("Connection error");
     };
 
     newSocket.onclose = () => {
       console.log("WebSocket disconnected");
     };
+  };
 
+  useEffect(() => {
+    connectWebSocket();
     return () => {
-      newSocket.close();
+      socketRef.current?.close();
     };
   }, []);
 
@@ -109,18 +150,20 @@ export default function ChatBox({
       content: message.content,
     });
 
-    // Changed from socketRef.current?.emit to send
     socketRef.current?.send(
       JSON.stringify({
-        content: message.content,
-        id: newMessage.id,
-        createdAt: new Date(),
+        type: WsMessageType.CHAT,
         user: {
           id: userProfile.id,
           username: userProfile.username,
           profilePictureUrl: userProfile.profilePictureUrl,
         },
-      })
+        message: {
+          content: message.content,
+          id: newMessage.id,
+          createdAt: new Date(),
+        },
+      } as WebsocketMessage)
     );
 
     setMessage({ content: "", id: newMessage.id });
@@ -202,6 +245,19 @@ export default function ChatBox({
 
   return (
     <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: "hsl(var(--background))",
+            color: "hsl(var(--foreground))",
+            border: "1px solid hsl(var(--border))",
+          },
+          className: "my-toast",
+          descriptionClassName: "my-toast-description",
+        }}
+        richColors
+      />
       {/* MESSAGE EDIT DIALOG */}
       <AlertDialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
         <AlertDialogContent>
